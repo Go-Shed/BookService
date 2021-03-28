@@ -31,8 +31,8 @@ func handleRequests() *mux.Router {
 6. No need to use servies, only use services when there is too much business logic, otherwise just make call to repos.
 7. Db and external calls strictly in repos folder.
 8. Feel free to create folder if required.
-9. PS: How go packages work: every folder is a package. Aceess method and object using these packages
-10. What is go.mod here? Used to manage depndency.
+9. PS: How go packages work: every folder is a package. Access method and object using these packages
+10. What is go.mod here? Used to manage dependency.
 **/
 func main() {
 
