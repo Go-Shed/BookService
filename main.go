@@ -36,6 +36,12 @@ func handleRequests() *mux.Router {
 **/
 func main() {
 
+	// db := dgraph.Dgraph{
+	// 	URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
+	// 	Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI="}
+
+	// fmt.Printf("%+v", db.GetUsers("potter"))
+
 	router := handleRequests()
 
 	srv := &http.Server{
