@@ -12,12 +12,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type Patch struct {
-	Username string `json:"username"`
-}
-
 type Variables struct {
-	Patch Patch `json:"patch"`
+	Patch interface{} `json:"patch"`
 }
 
 type Request struct {
@@ -31,17 +27,7 @@ type Dgraph struct {
 	Secret string
 }
 
-func (dgraph *Dgraph) GetUsers(userId string) User {
-
-	query := Request{
-		Query: fmt.Sprintf(`query {
-			getUser(username: "%s") {
-			  username
-			  posts{
-				  title
-			  }
-			}
-		  }`, userId)}
+func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
 
 	jsonValue, _ := json.Marshal(query)
 	request, err := http.NewRequest("POST", dgraph.URL, bytes.NewBuffer(jsonValue))
@@ -52,22 +38,64 @@ func (dgraph *Dgraph) GetUsers(userId string) User {
 		log.Fatal(err)
 	}
 
-	client := &http.Client{Timeout: time.Second * 10}
+	client := &http.Client{Timeout: time.Second * 5}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer response.Body.Close()
 	result, _ := ioutil.ReadAll(response.Body)
 	// fmt.Println(string(result))
 
-	var dat DgraphResponse
-
-	if err := json.Unmarshal([]byte(string(result)), &dat); err != nil {
+	var dgraphResponse DgraphResponse
+	if err := json.Unmarshal([]byte(string(result)), &dgraphResponse); err != nil {
 		panic(err)
 	}
-	data := dat.Data.(map[string]interface{})
+	data := dgraphResponse.Data.(map[string]interface{})
+	return data, nil
+}
+
+func (dgraph *Dgraph) GetUsers(userId string) User {
+	query := Request{
+		Query: fmt.Sprintf(`query {
+			getUser(username: "%s") {
+			  username
+			  posts{
+				  title
+			  }
+			}
+		  }`, userId)}
+
+	response, err := dgraph.Do(query)
+
+	if err != nil {
+		return User{}
+	}
+
 	var user User
-	mapstructure.Decode(data["getUser"], &user)
+	mapstructure.Decode(response["getUser"], &user)
 	return user
+}
+
+func (dgraph *Dgraph) CreateUser(newUser User) (User, error) {
+
+	query := Request{
+		Query: `mutation addUser($patch: [AddUserInput!]!) {
+			addUser(input: $patch) {
+			  user {
+				username
+			  }
+			}
+		  }`, Variables: Variables{Patch: newUser}, Operation: "addUser"}
+
+	response, err := dgraph.Do(query)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	data := response["addUser"].(map[string]interface{})
+	var user []User
+	mapstructure.Decode(data["user"], &user)
+	return user[0], nil
 }

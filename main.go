@@ -3,9 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
-
 	"shed/bookservice/handlers"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -40,7 +39,7 @@ func main() {
 	// 	URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
 	// 	Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI="}
 
-	// fmt.Printf("%+v", db.GetUsers("potter"))
+	// fmt.Printf("%+v", db.GetUsers("lol"))
 
 	router := handleRequests()
 
