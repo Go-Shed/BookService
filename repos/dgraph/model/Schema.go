@@ -1,10 +1,6 @@
-package dgraph
+package model
 
 import "time"
-
-type DgraphResponse struct {
-	Data interface{} `json:"data"`
-}
 
 type User struct {
 	Username  string `json:"username"`
@@ -24,6 +20,7 @@ type Post struct {
 	DatePublished time.Time `json:"datePublished,omitempty"`
 	TotalLikes    int64     `json:"totalLikes,omitempty"`
 	Likes         []Like    `json:"likes,omitempty"`
+	Author        User      `json:"author,omitempty"`
 }
 
 type Like struct {

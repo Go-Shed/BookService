@@ -3,13 +3,10 @@ package dgraph
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 type Variables struct {
@@ -20,6 +17,10 @@ type Request struct {
 	Query     string    `json:"query"`
 	Variables Variables `json:"variables,omitempty"`
 	Operation string    `json:"operation,omitempty"`
+}
+
+type DgraphResponse struct {
+	Data interface{} `json:"data"`
 }
 
 type Dgraph struct {
@@ -53,49 +54,4 @@ func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
 	}
 	data := dgraphResponse.Data.(map[string]interface{})
 	return data, nil
-}
-
-func (dgraph *Dgraph) GetUsers(userId string) User {
-	query := Request{
-		Query: fmt.Sprintf(`query {
-			getUser(username: "%s") {
-			  username
-			  posts{
-				  title
-			  }
-			}
-		  }`, userId)}
-
-	response, err := dgraph.Do(query)
-
-	if err != nil {
-		return User{}
-	}
-
-	var user User
-	mapstructure.Decode(response["getUser"], &user)
-	return user
-}
-
-func (dgraph *Dgraph) CreateUser(newUser User) (User, error) {
-
-	query := Request{
-		Query: `mutation addUser($patch: [AddUserInput!]!) {
-			addUser(input: $patch) {
-			  user {
-				username
-			  }
-			}
-		  }`, Variables: Variables{Patch: newUser}, Operation: "addUser"}
-
-	response, err := dgraph.Do(query)
-
-	if err != nil {
-		return User{}, err
-	}
-
-	data := response["addUser"].(map[string]interface{})
-	var user []User
-	mapstructure.Decode(data["user"], &user)
-	return user[0], nil
 }
