@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
 	"shed/bookservice/handlers"
-	"shed/bookservice/repos/dgraph/query"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -38,18 +39,22 @@ func main() {
 	// 	URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
 	// 	Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI="}
 
-	postRepo := query.NewPostRepo()
+	// likeRepo := query.NewLikeRepo()
 
-	fmt.Printf("%+v", postRepo.GetUserFeeds("potter"))
+	// err := likeRepo.UpdateLikeOnPost("0x9", "anand bhai")
 
-	// router := handleRequests()
-
-	// srv := &http.Server{
-	// 	Handler:      router,
-	// 	Addr:         "127.0.0.1:8000",
-	// 	WriteTimeout: 5 * time.Second,
-	// 	ReadTimeout:  5 * time.Second,
+	// if err != nil {
+	// 	log.Fatal(err)
 	// }
 
-	// log.Fatal(srv.ListenAndServe())
+	router := handleRequests()
+
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         "127.0.0.1:8000",
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

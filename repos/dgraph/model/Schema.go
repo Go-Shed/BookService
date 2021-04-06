@@ -3,7 +3,7 @@ package model
 import "time"
 
 type User struct {
-	Username  string `json:"username"`
+	Username  string `json:"username,omitempty"`
 	Followers []User `json:"followers,omitempty"`
 	Following []User `json:"following,omitempty"`
 	Email     string `json:"email,omitempty"`
@@ -13,7 +13,7 @@ type User struct {
 }
 
 type Post struct {
-	Id            string    `json:"id"`
+	Id            string    `json:"id,omitempty"`
 	Title         string    `json:"title,omitempty"`
 	Text          string    `json:"text,omitempty"`
 	Tags          string    `json:"tags,omitempty"`
@@ -24,7 +24,7 @@ type Post struct {
 }
 
 type Like struct {
-	Id        string    `json:"id"`
+	Id        string    `json:"id,omitempty"`
 	TimeStamp time.Time `json:"timestamp,omitempty"`
 	LikedOn   Post      `json:"likedOn,omitempty"`
 	LikedBy   User      `json:"likedBy,omitempty"`
