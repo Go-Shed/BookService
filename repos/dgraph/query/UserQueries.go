@@ -43,6 +43,46 @@ func (repo UserRepo) GetUsers(userId string) model.User {
 	return user
 }
 
+func (repo UserRepo) FollowUser(user, userToFollow string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updateUser(input: {filter: {username: {eq: "%s"}}, set: {following: {username: "%s"}}}){
+			  user{
+				username
+			  }
+			}
+		  }
+		  `, user, userToFollow), Operation: "updateUser"}
+
+	_, err := client.Do(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo UserRepo) UnFollowUser(user, userToUnFollow string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updateUser(input: {filter: {username: {eq: "%s"}}, remove: {following: {username: "%s"}}}){
+			  user{
+				username
+			  }
+			}
+		  }
+		  `, user, userToUnFollow), Operation: "updateUser"}
+
+	_, err := client.Do(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 
 	client := repo.client
