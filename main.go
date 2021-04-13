@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"shed/bookservice/handlers"
+	auth "shed/bookservice/handlers/Auth"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -16,7 +17,7 @@ Mux mathches routes in the order they were defined
 func handleRequests() *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/facts", handlers.GetFacts).Methods("POST")
+	router.Handle("/facts", auth.AuthorizeUsers(http.HandlerFunc(handlers.GetFacts))).Methods("POST")
 	return router
 }
 
