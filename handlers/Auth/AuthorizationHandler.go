@@ -31,6 +31,7 @@ func AuthorizeUsers(next http.Handler) http.Handler {
 			fmt.Println("Malformed token")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Malformed Token"))
+			return
 		}
 
 		ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
@@ -39,10 +40,11 @@ func AuthorizeUsers(next http.Handler) http.Handler {
 		if err != nil {
 			fmt.Println("Malformed token")
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Malformed Token"))
+			w.Write([]byte("Unauthorized"))
+			return
 		}
 
-		requestContext := context.WithValue(r.Context(), RequestContextKey{Key: "uid"}, token.UID)
+		requestContext := context.WithValue(r.Context(), RequestContextKey{Key: "uid"}, token)
 		next.ServeHTTP(w, r.WithContext(requestContext))
 	})
 }

@@ -4,10 +4,10 @@ import "time"
 
 type User struct {
 	Username  string `json:"username,omitempty"`
+	UserId    string `json:"userId,omitempty"`
 	Followers []User `json:"followers,omitempty"`
 	Following []User `json:"following,omitempty"`
 	Email     string `json:"email,omitempty"`
-	Token     string `json:"token,omitempty"`
 	Posts     []Post `json:"posts,omitempty"`
 	Likes     []Like `json:"likes,omitempty"`
 }
