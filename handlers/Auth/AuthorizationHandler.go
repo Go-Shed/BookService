@@ -3,20 +3,15 @@ package auth
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
-	"time"
-
-	firebase "firebase.google.com/go/v4"
-	"firebase.google.com/go/v4/auth"
 )
 
-var Client *auth.Client
+// var Client *auth.Client
 
-func init() {
-	Client = createFireBaseClient()
-}
+// func init() {
+// 	Client = createFireBaseClient()
+// }
 
 type RequestContextKey struct {
 	Key string `json:"key"`
@@ -34,32 +29,33 @@ func AuthorizeUsers(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-		token, err := Client.VerifyIDToken(ctx, authToken[1])
+		// ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
+		// token, err := Client.VerifyIDToken(ctx, authToken[1])
 
-		if err != nil {
-			fmt.Println("Malformed token")
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
-			return
-		}
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	fmt.Println("Malformed token")
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	w.Write([]byte("Unauthorized"))
+		// 	return
+		// }
 
-		requestContext := context.WithValue(r.Context(), RequestContextKey{Key: "uid"}, token)
+		requestContext := context.WithValue(r.Context(), RequestContextKey{Key: "uid"}, authToken[1])
 		next.ServeHTTP(w, r.WithContext(requestContext))
 	})
 }
 
-func createFireBaseClient() *auth.Client {
-	app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: "shed-477d9"})
-	if err != nil {
-		log.Fatalf("error initializing firebase auth: %v\n", err)
-	}
+// func createFireBaseClient() *auth.Client {
+// 	app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: "shed-477d9"})
+// 	if err != nil {
+// 		log.Fatalf("error initializing firebase auth: %v\n", err)
+// 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-	client, err := app.Auth(ctx)
-	if err != nil {
-		log.Fatalf("error getting firebase Auth client: %v\n", err)
-	}
+// 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
+// 	client, err := app.Auth(ctx)
+// 	if err != nil {
+// 		log.Fatalf("error getting firebase Auth client: %v\n", err)
+// 	}
 
-	return client
-}
+// 	return client
+// }

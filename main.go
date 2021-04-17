@@ -28,7 +28,7 @@ func main() {
 	fmt.Println("Starting server")
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         "127.0.0.1:8000",
+		Addr:         "localhost:8000",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
