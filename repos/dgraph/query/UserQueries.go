@@ -13,10 +13,7 @@ type UserRepo struct {
 }
 
 func NewUserRepo() UserRepo {
-	return UserRepo{client: dgraph.Dgraph{
-		URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
-		Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI=",
-	}}
+	return UserRepo{client: dgraph.Dgraph{}}
 }
 
 func (repo UserRepo) GetUsers(token string) model.User {

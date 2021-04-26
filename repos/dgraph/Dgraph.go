@@ -24,16 +24,17 @@ type DgraphResponse struct {
 }
 
 type Dgraph struct {
-	URL    string
-	Secret string
 }
+
+const URL = "https://patient-resonance.ap-south-1.aws.cloud.dgraph.io/graphql"
+const secret = "MTMyYWIwY2E3YTc0ODQ3MTJkNWRjMDkxYzA4MWJmN2U="
 
 func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
 
 	jsonValue, _ := json.Marshal(query)
-	request, err := http.NewRequest("POST", dgraph.URL, bytes.NewBuffer(jsonValue))
+	request, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonValue))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Dg-Auth", dgraph.Secret)
+	request.Header.Set("Dg-Auth", secret)
 
 	if err != nil {
 		log.Fatal(err)

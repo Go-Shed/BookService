@@ -13,10 +13,7 @@ type PostRepo struct {
 }
 
 func NewPostRepo() PostRepo {
-	return PostRepo{client: dgraph.Dgraph{
-		URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
-		Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI=",
-	}}
+	return PostRepo{client: dgraph.Dgraph{}}
 }
 
 func (repo PostRepo) GetUserPosts(userId string) model.User {
@@ -43,28 +40,38 @@ func (repo PostRepo) GetUserPosts(userId string) model.User {
 	return user
 }
 
-func (repo PostRepo) GetUserFeeds(userId string) model.User {
+func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 	client := repo.client
 	query := dgraph.Request{
-		Query: fmt.Sprintf(`query {
-			getUser(username: "%s") {
-				following(offset: 10) {
-				  username
-				  posts {
-					title
-					text
+		Query: fmt.Sprintf(`query MyQuery {
+			getUser(userId: "%s") {
+			  following {
+				userId
+				userName
+				userPhoto
+				posts {
+				  id
+				  text
+				  color
+				  createdAt
+				  likes(filter: {userId: {eq: "%s"}}) {
+					userId
+				  }
+				  likesAggregate{
+					  count
 				  }
 				}
 			  }
-		  }`, userId)}
+			}
+		}`, userId, userId)}
 
 	response, err := client.Do(query)
 
 	if err != nil {
-		return model.User{}
+		return model.User{}, nil
 	}
 
 	var user model.User
 	mapstructure.Decode(response["getUser"], &user)
-	return user
+	return user, nil
 }

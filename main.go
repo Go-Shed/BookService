@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"shed/bookservice/handlers"
 	auth "shed/bookservice/handlers/Auth"
 	"time"
 
@@ -16,8 +17,10 @@ Mux mathches routes in the order they were defined
 */
 func handleRequests() *mux.Router {
 
+	postsHandler := handlers.NewPostHandler()
 	router := mux.NewRouter().StrictSlash(true)
 	router.Handle("/signup", auth.AuthorizeUsers(http.HandlerFunc(auth.Signup))).Methods("POST")
+	router.HandleFunc("/getPosts", postsHandler.GetPosts).Methods("POST")
 	return router
 }
 
