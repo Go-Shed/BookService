@@ -1,31 +1,55 @@
 package model
 
-import "time"
-
 type User struct {
+	UserId    string `json:"userId,omitempty"`
 	Username  string `json:"username,omitempty"`
+	UserPhoto string `json:"userPhoto,omitempty"`
 	Followers []User `json:"followers,omitempty"`
 	Following []User `json:"following,omitempty"`
 	Email     string `json:"email,omitempty"`
-	Token     string `json:"token,omitempty"`
 	Posts     []Post `json:"posts,omitempty"`
-	Likes     []Like `json:"likes,omitempty"`
+	Likes     []Post `json:"likes,omitempty"`
 }
 
 type Post struct {
-	Id            string    `json:"id,omitempty"`
-	Title         string    `json:"title,omitempty"`
-	Text          string    `json:"text,omitempty"`
-	Tags          string    `json:"tags,omitempty"`
-	DatePublished time.Time `json:"datePublished,omitempty"`
-	TotalLikes    int64     `json:"totalLikes,omitempty"`
-	Likes         []Like    `json:"likes,omitempty"`
-	Author        User      `json:"author,omitempty"`
+	Id             string    `json:"id,omitempty"`
+	Text           string    `json:"text,omitempty"`
+	Color          string    `json:"color,omitempty"`
+	CreatedAt      string    `json:"createdAt,omitempty"`
+	UpdatedAt      string    `json:"updatedAt,omitempty"`
+	LikesAggregate Aggregate `json:"likesAggregate,omitempty"`
+	Likes          []User    `json:"likes,omitempty"`
+	Author         User      `json:"author,omitempty"`
 }
 
-type Like struct {
-	Id        string    `json:"id,omitempty"`
-	TimeStamp time.Time `json:"timestamp,omitempty"`
-	LikedOn   Post      `json:"likedOn,omitempty"`
-	LikedBy   User      `json:"likedBy,omitempty"`
+type Aggregate struct {
+	Count int64 `json:"count,omitempty"`
 }
+
+/**
+Dgraph schema:
+
+type User {
+  userId: String! @id
+  userName: String! @search(by: [exact])
+  userPhoto: String
+  email: String
+  followers: [User!]
+  following: [User!] @hasInverse(field:followers)
+  posts: [Post!] @hasInverse(field:author)
+  likes: [Post!] @hasInverse(field:likes)
+}
+
+
+
+type Post {
+  id: ID!
+  text: String!
+  author: User!
+  color: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  totalLikes: Int64
+  likes: [User!]
+}
+**/

@@ -13,24 +13,21 @@ type UserRepo struct {
 }
 
 func NewUserRepo() UserRepo {
-	return UserRepo{client: dgraph.Dgraph{
-		URL:    "https://billowing-night.ap-south-1.aws.cloud.dgraph.io/graphql",
-		Secret: "ZTE4YjRhNGEwYTAxNWRiYjMwMGI4YmEyMjc1ODU5ZmI=",
-	}}
+	return UserRepo{client: dgraph.Dgraph{}}
 }
 
-func (repo UserRepo) GetUsers(userId string) model.User {
+func (repo UserRepo) GetUsers(token string) model.User {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`query {
-			getUser(username: "%s") {
+			getUser(token: "%s") {
 			  username
 			  posts{
 				  title
 				  text
 			  }
 			}
-		  }`, userId)}
+		  }`, token)}
 
 	response, err := client.Do(query)
 
@@ -101,6 +98,9 @@ func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 		return model.User{}, err
 	}
 
+	if response["addUser"] == nil {
+		return model.User{}, fmt.Errorf("username already exists")
+	}
 	data := response["addUser"].(map[string]interface{})
 	var user []model.User
 	mapstructure.Decode(data["user"], &user)
