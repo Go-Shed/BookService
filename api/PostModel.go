@@ -20,3 +20,8 @@ type GetPostsResponse struct {
 	PostId          string `json:"post_id"`
 	CreatedAt       string `json:"created_at"`
 }
+
+type AddPostRequest struct {
+	Text      string `json:"text"`
+	PostColor string `json:"post_color"`
+}

@@ -1,10 +1,13 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"shed/bookservice/api"
+	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
 	"sort"
+	"time"
 )
 
 type PostsService struct {
@@ -16,7 +19,7 @@ func NewPostsService() PostsService {
 }
 
 func (p *PostsService) GetPosts(userId, screenName string) ([]api.GetPostsResponse, error) {
-	client := query.NewPostRepo()
+	client := p.PostRepo
 
 	user, err := client.GetUserFeedHomeScreen(userId)
 
@@ -62,4 +65,19 @@ func (p *PostsService) GetPosts(userId, screenName string) ([]api.GetPostsRespon
 		return response[i].CreatedAt > response[j].CreatedAt
 	})
 	return response, nil
+}
+
+func (p *PostsService) AddPost(text, color, userId string) error {
+	client := p.PostRepo
+	timeNow := time.Now().Local().String()
+	post := model.Post{Text: text, Color: color, Author: model.User{UserId: userId},
+		CreatedAt: timeNow, UpdatedAt: timeNow}
+
+	response, err := client.CreatePost(post)
+
+	fmt.Println(err)
+	if err != nil || response.Id == "" {
+		return errors.New("post not created")
+	}
+	return nil
 }

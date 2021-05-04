@@ -75,3 +75,27 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 	mapstructure.Decode(response["getUser"], &user)
 	return user, nil
 }
+
+func (repo PostRepo) CreatePost(post model.Post) (model.Post, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: `mutation addPost($patch: [AddPostInput!]!) {
+			addPost(input: $patch) {
+			  post {
+				id
+			  }
+			}
+		  }`, Variables: dgraph.Variables{Patch: post}, Operation: "addPost"}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	data := response["addPost"].(map[string]interface{})
+	var createdPost []model.Post
+	mapstructure.Decode(data["post"], &createdPost)
+	return createdPost[0], nil
+}

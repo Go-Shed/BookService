@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
+	auth "shed/bookservice/handlers/Auth"
 	"shed/bookservice/services"
 )
 
@@ -30,4 +31,22 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response) ////write response to http writer
+}
+
+func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body) /// Deserialize request
+	var request api.AddPostRequest
+	json.Unmarshal(reqBody, &request) ///// deserialize and map it to object
+
+	err := p.PostsService.AddPost(request.Text, request.PostColor, uid)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
 }

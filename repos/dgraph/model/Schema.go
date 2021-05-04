@@ -17,7 +17,7 @@ type Post struct {
 	Color          string    `json:"color,omitempty"`
 	CreatedAt      string    `json:"createdAt,omitempty"`
 	UpdatedAt      string    `json:"updatedAt,omitempty"`
-	LikesAggregate Aggregate `json:"likesAggregate,omitempty"`
+	LikesAggregate Aggregate `json:"-"`
 	Likes          []User    `json:"likes,omitempty"`
 	Author         User      `json:"author,omitempty"`
 }
