@@ -99,3 +99,27 @@ func (repo PostRepo) CreatePost(post model.Post) (model.Post, error) {
 	mapstructure.Decode(data["post"], &createdPost)
 	return createdPost[0], nil
 }
+
+func (repo PostRepo) UpdatePost(post model.Post) (model.Post, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation{
+			updatePost(input: {filter: {id: "%s"}, set: {text: "%s", updatedAt: "%s"}}){
+			  post{
+				id
+			  }
+			}
+		  }`, post.Id, post.Text, post.UpdatedAt), Operation: "updateUser"}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	data := response["updatePost"].(map[string]interface{})
+	var updatedPost []model.Post
+	mapstructure.Decode(data["post"], &updatedPost)
+	return updatedPost[0], nil
+}

@@ -81,3 +81,17 @@ func (p *PostsService) AddPost(text, color, userId string) error {
 	}
 	return nil
 }
+
+func (p *PostsService) UpdatePost(text, userId, postId string) error {
+	client := p.PostRepo
+	timeNow := time.Now().Local().String()
+	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
+
+	response, err := client.UpdatePost(post)
+
+	fmt.Println(err)
+	if err != nil || response.Id == "" {
+		return errors.New("post not created")
+	}
+	return nil
+}

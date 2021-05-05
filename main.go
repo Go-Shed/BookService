@@ -22,6 +22,7 @@ func handleRequests() *mux.Router {
 	router.Handle("/signup", auth.AuthorizeUsers(http.HandlerFunc(auth.Signup))).Methods("POST")
 	router.HandleFunc("/getPosts", postsHandler.GetPosts).Methods("POST")
 	router.Handle("/addPost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.AddPost))).Methods("POST")
+	router.Handle("/updatePost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.AddPost))).Methods("POST")
 	return router
 }
 
