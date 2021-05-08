@@ -89,9 +89,30 @@ func (p *PostsService) UpdatePost(text, userId, postId string) error {
 
 	response, err := client.UpdatePost(post)
 
-	fmt.Println(err)
 	if err != nil || response.Id == "" {
 		return errors.New("post not created")
+	}
+	return nil
+}
+
+func (p *PostsService) LikePost(postId, userId string) error {
+	client := p.PostRepo
+
+	err := client.LikePost(postId, userId)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PostsService) UnlikePost(postId, userId string) error {
+	client := p.PostRepo
+
+	err := client.UnlikePost(postId, userId)
+
+	if err != nil {
+		return err
 	}
 	return nil
 }

@@ -68,3 +68,39 @@ func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
 }
+
+func (p *postHandler) LikePost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body) /// Deserialize request
+	var request api.LikeActionPost
+	json.Unmarshal(reqBody, &request) ///// deserialize and map it to object
+
+	err := p.PostsService.LikePost(request.PostId, uid)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
+}
+
+func (p *postHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body) /// Deserialize request
+	var request api.LikeActionPost
+	json.Unmarshal(reqBody, &request) ///// deserialize and map it to object
+
+	err := p.PostsService.UnlikePost(request.PostId, uid)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
+}

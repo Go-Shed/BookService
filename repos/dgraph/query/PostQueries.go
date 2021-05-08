@@ -123,3 +123,47 @@ func (repo PostRepo) UpdatePost(post model.Post) (model.Post, error) {
 	mapstructure.Decode(data["post"], &updatedPost)
 	return updatedPost[0], nil
 }
+
+func (repo PostRepo) LikePost(postId, userId string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updatePost(input: {filter: {id: "%s"}, set: {likes: {userId: "%s"}}}){
+			  post{
+				id
+			  }
+			}
+		  }
+		  `, postId, userId), Operation: "updatePost"}
+
+	_, err := client.Do(query)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo PostRepo) UnlikePost(postId, userId string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updatePost(input: {filter: {id: "%s"}, remove: {likes: {userId: "%s"}}}){
+			  post{
+				id
+			  }
+			}
+		  }
+		  `, postId, userId), Operation: "updatePost"}
+
+	_, err := client.Do(query)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
