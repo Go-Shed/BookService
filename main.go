@@ -18,11 +18,15 @@ Mux mathches routes in the order they were defined
 func handleRequests() *mux.Router {
 
 	postsHandler := handlers.NewPostHandler()
+	userHandler := handlers.NewUserHandler()
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.Handle("/signup", auth.AuthorizeUsers(http.HandlerFunc(auth.Signup))).Methods("POST")
 	router.HandleFunc("/getPosts", postsHandler.GetPosts).Methods("POST")
 	router.Handle("/addPost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.AddPost))).Methods("POST")
 	router.Handle("/updatePost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.AddPost))).Methods("POST")
+	router.Handle("/follow", auth.AuthorizeUsers(http.HandlerFunc(userHandler.FollowUser))).Methods("POST")
+	router.Handle("/unfollow", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UnfollowUser))).Methods("POST")
 	return router
 }
 
