@@ -25,7 +25,7 @@ func (p *PostsService) GetPosts(userId, screenName string, isSelf bool) ([]api.G
 	} else if screenName == constants.SCREEN_PROFILE {
 		return p.getProfileScreen(userId, isSelf)
 	} else {
-		return []api.GetPostsResponse{}, nil
+		return p.getExploreScreen(userId)
 	}
 }
 
@@ -166,6 +166,52 @@ func (p *PostsService) getProfileScreen(userId string, isSelf bool) ([]api.GetPo
 	////// sort according to date
 	sort.Slice(response, func(i, j int) bool {
 		return response[i].CreatedAt > response[j].CreatedAt
+	})
+
+	return response, nil
+}
+
+func (p *PostsService) getExploreScreen(userId string) ([]api.GetPostsResponse, error) {
+
+	client := p.PostRepo
+	posts, err := client.GetExporeScreen(userId)
+
+	if err != nil {
+		return []api.GetPostsResponse{}, err
+	}
+
+	var response []api.GetPostsResponse
+
+	for _, post := range posts {
+
+		postItem := api.GetPostsResponse{
+			UserId:          post.Author.UserId,
+			UserName:        post.Author.Username,
+			PostColor:       post.Color,
+			ShowEditBtn:     false,
+			ShowFollowBtn:   true,
+			ShowLikeSection: true,
+			IsFollowed:      false,
+			IsLiked:         false,
+			UserPhoto:       post.Author.UserPhoto,
+			Text:            post.Text,
+			PostId:          post.Id,
+			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
+			CreatedAt:       fmt.Sprint(post.CreatedAt),
+		}
+
+		if len(post.Likes) > 0 {
+			postItem.IsLiked = true
+		}
+		if len(post.Author.Followers) > 0 {
+			postItem.IsFollowed = true
+		}
+		response = append(response, postItem)
+	}
+
+	////// sort according to likes
+	sort.Slice(response, func(i, j int) bool {
+		return response[i].LikeCount > response[j].LikeCount
 	})
 
 	return response, nil
