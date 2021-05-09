@@ -76,6 +76,39 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 	return user, nil
 }
 
+func (repo PostRepo) GetUserHomeProfileScreen(userId string) (model.User, error) {
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query MyQuery {
+			getUser(userId: "%s") {
+				userName
+				userPhoto
+    		posts {
+				  id
+				  text
+				  color
+				  createdAt
+				  likes(filter: {userId: {eq: "%s"}}) {
+					userId
+				  }
+				  likesAggregate{
+					  count
+				  }
+        }
+			}
+}`, userId, userId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}, nil
+	}
+
+	var user model.User
+	mapstructure.Decode(response["getUser"], &user)
+	return user, nil
+}
+
 func (repo PostRepo) CreatePost(post model.Post) (model.Post, error) {
 
 	client := repo.client
