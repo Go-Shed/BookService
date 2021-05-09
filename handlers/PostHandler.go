@@ -41,7 +41,7 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	var request api.AddPostRequest
 	json.Unmarshal(reqBody, &request) ///// deserialize and map it to object
 
-	err := p.PostsService.AddPost(request.Text, request.PostColor, uid)
+	err := p.PostsService.AddPost(request.Post, request.PostColor, uid)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})

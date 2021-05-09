@@ -25,6 +25,7 @@ type AddPostRequest struct {
 	Post      string `json:"post"`
 	BookTitle string `json:"book_title"`
 	BookId    string `json:"book_id"`
+	PostColor string `json:"post_color"`
 }
 
 type UpdatePostRequest struct {
