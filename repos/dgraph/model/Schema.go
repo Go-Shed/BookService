@@ -29,6 +29,7 @@ type Aggregate struct {
 }
 
 type Book struct {
+	Id    string `json:"id,omitempty"`
 	Name  string `json:"name,omitempty"`
 	Posts []Post `json:"posts,omitempty"`
 	Users []User `json:"users,omitempty"`

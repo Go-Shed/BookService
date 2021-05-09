@@ -23,7 +23,7 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	var request api.GetPostsRequest
 	json.Unmarshal(reqBody, &request) ///// deserialize and map it to object
 
-	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName)
+	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName, true)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "No posts to show, why not follow someone!"})

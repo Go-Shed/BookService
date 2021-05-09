@@ -19,6 +19,7 @@ func handleRequests() *mux.Router {
 
 	postsHandler := handlers.NewPostHandler()
 	userHandler := handlers.NewUserHandler()
+	bookHandler := handlers.NewBookHandler()
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.Handle("/signup", auth.AuthorizeUsers(http.HandlerFunc(auth.Signup))).Methods("POST")
@@ -30,6 +31,7 @@ func handleRequests() *mux.Router {
 	router.Handle("/like", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.LikePost))).Methods("POST")
 	router.Handle("/unlike", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.UnlikePost))).Methods("POST")
 	router.HandleFunc("/getPosts", userHandler.SearchUser).Methods("POST")
+	router.HandleFunc("/getBooks", bookHandler.GetBooks).Methods("POST")
 	return router
 }
 
