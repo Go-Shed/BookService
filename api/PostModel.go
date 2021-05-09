@@ -22,8 +22,9 @@ type GetPostsResponse struct {
 }
 
 type AddPostRequest struct {
-	Text      string `json:"text"`
-	PostColor string `json:"post_color"`
+	Post      string `json:"post"`
+	BookTitle string `json:"book_title"`
+	BookId    string `json:"book_id"`
 }
 
 type UpdatePostRequest struct {
