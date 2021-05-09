@@ -106,3 +106,26 @@ func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 	mapstructure.Decode(data["user"], &user)
 	return user[0], nil
 }
+
+func (repo UserRepo) SearchUser(username string) model.User {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`{
+			queryUser(filter: {userName: {regexp: "/.*%s.*/i"}}){
+			 userId
+			  userName
+			}
+		  }
+		  `, username)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}
+	}
+
+	var user model.User
+	mapstructure.Decode(response["queryUser"], &user)
+	return user
+}

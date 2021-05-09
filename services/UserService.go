@@ -1,6 +1,9 @@
 package services
 
-import "shed/bookservice/repos/dgraph/query"
+import (
+	"shed/bookservice/repos/dgraph/model"
+	"shed/bookservice/repos/dgraph/query"
+)
 
 type UserService struct {
 	UserRepo query.UserRepo
@@ -18,4 +21,9 @@ func (u *UserService) FollowUser(userId, userIdToFollow string) error {
 func (u *UserService) UnfollowUser(userId, userIdToUnFollow string) error {
 	err := u.UserRepo.UnFollowUser(userId, userIdToUnFollow)
 	return err
+}
+
+func (u *UserService) SearchUser(username string) model.User {
+	user := u.UserRepo.SearchUser(username)
+	return user
 }
