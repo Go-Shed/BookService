@@ -9,6 +9,7 @@ type User struct {
 	Email     string `json:"email,omitempty"`
 	Posts     []Post `json:"posts,omitempty"`
 	Likes     []Post `json:"likes,omitempty"`
+	Books     []Book `json:"books,omitempty"`
 }
 
 type Post struct {
@@ -20,10 +21,17 @@ type Post struct {
 	LikesAggregate Aggregate `json:"-"`
 	Likes          []User    `json:"likes,omitempty"`
 	Author         User      `json:"author,omitempty"`
+	Book           Book      `json:"book,omitempty"`
 }
 
 type Aggregate struct {
 	Count int64 `json:"count,omitempty"`
+}
+
+type Book struct {
+	Name  string `json:"name,omitempty"`
+	Posts []Post `json:"posts,omitempty"`
+	Users []User `json:"users,omitempty"`
 }
 
 /**
@@ -52,4 +60,10 @@ type Post {
   totalLikes: Int64
   likes: [User!]
 }
+
+type Book{
+	name: String! @id @search(by: [trigram])
+	posts: [Post!]
+	users: [User!]
+  }
 **/
