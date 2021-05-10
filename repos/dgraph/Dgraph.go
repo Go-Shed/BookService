@@ -3,7 +3,6 @@ package dgraph
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -48,7 +47,7 @@ func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
 	}
 	defer response.Body.Close()
 	result, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(result))
+	// fmt.Println(string(result))
 
 	var dgraphResponse DgraphResponse
 	if err := json.Unmarshal([]byte(string(result)), &dgraphResponse); err != nil {

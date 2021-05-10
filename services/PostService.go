@@ -33,9 +33,8 @@ func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf boo
 
 func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 
-	// client := p.PostRepo
-	// timeNow := time.Now().Local().String()
-	fmt.Println("afds")
+	client := p.PostRepo
+	timeNow := time.Now().Local().String()
 
 	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
 	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
@@ -43,22 +42,19 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 	newBook, err := p.BookRepo.CreateOrGetBook(bookId, bookTitle)
 
 	if err != nil {
-		fmt.Printf("%+v", err)
 		return err
 	}
 
 	book := model.Book{Id: newBook}
 
-	fmt.Printf("%+v", book)
+	post := model.Post{Text: text, CreatedAt: timeNow, UpdatedAt: timeNow, Book: book}
+	user := model.User{UserId: userId, Books: []model.Book{book}, Posts: []model.Post{post}}
 
-	// post := model.Post{Text: text, CreatedAt: timeNow, UpdatedAt: timeNow, Book: book}
-	// user := model.User{UserId: userId, Books: []model.Book{book}, Posts: []model.Post{post}}
+	err = client.CreatePost(user)
 
-	// err = client.CreatePost(user)
-
-	// if err != nil {
-	// 	return errors.New("post not created")
-	// }
+	if err != nil {
+		return errors.New("post not created")
+	}
 	return nil
 }
 

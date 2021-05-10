@@ -45,12 +45,12 @@ func (repo BookRepo) CreateOrGetBook(bookId, bookName string) (string, error) {
 
 	client := repo.client
 	query := dgraph.Request{
-		Query: fmt.Sprintf(`{
-			queryBook(filter: {id: "%s", or: {name: {eq: "%s"}}}){
+		Query: fmt.Sprintf(`query{
+			queryBook(filter: {name: {eq: "%s"}, or: {id: "%s"}}) {
+			  name
 			  id
 			}
-		  }
-		  `, bookId, bookName),
+		  }`, bookName, bookId),
 	}
 
 	response, err := client.Do(query)
@@ -89,8 +89,8 @@ func (repo BookRepo) CreateBook(bookName string) (string, error) {
 		return "", err
 	}
 
-	var books []model.Book
-	mapstructure.Decode(response["addBook"], &books)
+	var book model.Book
+	mapstructure.Decode(response["addBook"], &book)
 
-	return "fasfd", nil
+	return book.Id, nil
 }
