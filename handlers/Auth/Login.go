@@ -27,7 +27,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &request)
 
 	if len(request.Email) == 0 || len(request.Username) == 0 || len(uid) == 0 {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "Username, email and userId can not be empty"})
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "Username, email or userId can not be empty"})
 		return
 	}
 
@@ -35,7 +35,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	_, err := userRepo.CreateUser(model.User{Username: request.Username, UserId: uid, Email: request.Email})
 
 	if err != nil {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "userId already exists"})
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "UserId already exists"})
 		return
 	}
 

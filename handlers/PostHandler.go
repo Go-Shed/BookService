@@ -23,10 +23,15 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	var request api.GetPostsRequest
 	json.Unmarshal(reqBody, &request)
 
-	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName, true)
+	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName, request.ForUserID, request.IsSelf)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "No posts to show, why not follow someone!"})
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
+		return
+	}
+
+	if len(response) == 0 {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Message: "No Posts here, why not follow someone!"})
 		return
 	}
 
@@ -41,14 +46,19 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	var request api.AddPostRequest
 	json.Unmarshal(reqBody, &request)
 
-	err := p.PostsService.AddPost(request.Post, request.PostColor, uid)
-
-	if err != nil {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+	if len(request.Post) == 0 || len(uid) == 0 || (len(request.BookId) == 0 && len(request.BookTitle) == 0) {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "post or book empty"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200})
+	err := p.PostsService.AddPost(request.Post, uid, request.BookId, request.BookTitle)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Some error occurred, please try again"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Message: "Post created successfully"})
 }
 
 func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {

@@ -8,39 +8,57 @@ import (
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
 	"sort"
+	"strings"
 	"time"
 )
 
 type PostsService struct {
 	PostRepo query.PostRepo
+	BookRepo query.BookRepo
 }
 
 func NewPostsService() PostsService {
-	return PostsService{PostRepo: query.NewPostRepo()}
+	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo()}
 }
 
-func (p *PostsService) GetPosts(userId, screenName string, isSelf bool) ([]api.GetPostsResponse, error) {
+func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf bool) ([]api.GetPostsResponse, error) {
 	if screenName == constants.SCREEN_HOME {
 		return p.getHomeScreen(userId)
 	} else if screenName == constants.SCREEN_PROFILE {
-		return p.getProfileScreen(userId, isSelf)
+		return p.getProfileScreen(userId, forUserId, isSelf)
 	} else {
 		return p.getExploreScreen(userId)
 	}
 }
 
-func (p *PostsService) AddPost(text, color, userId string) error {
-	client := p.PostRepo
-	timeNow := time.Now().Local().String()
-	post := model.Post{Text: text, Color: color, Author: model.User{UserId: userId},
-		CreatedAt: timeNow, UpdatedAt: timeNow}
+func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 
-	response, err := client.CreatePost(post)
+	// client := p.PostRepo
+	// timeNow := time.Now().Local().String()
+	fmt.Println("afds")
 
-	fmt.Println(err)
-	if err != nil || response.Id == "" {
-		return errors.New("post not created")
+	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
+	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
+
+	newBook, err := p.BookRepo.CreateOrGetBook(bookId, bookTitle)
+
+	if err != nil {
+		fmt.Printf("%+v", err)
+		return err
 	}
+
+	book := model.Book{Id: newBook}
+
+	fmt.Printf("%+v", book)
+
+	// post := model.Post{Text: text, CreatedAt: timeNow, UpdatedAt: timeNow, Book: book}
+	// user := model.User{UserId: userId, Books: []model.Book{book}, Posts: []model.Post{post}}
+
+	// err = client.CreatePost(user)
+
+	// if err != nil {
+	// 	return errors.New("post not created")
+	// }
 	return nil
 }
 
@@ -116,7 +134,6 @@ func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, err
 		for _, post := range following.Posts {
 			item := userFeedItem
 			item.Text = post.Text
-			item.PostColor = post.Color
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = fmt.Sprint(post.CreatedAt)
@@ -135,9 +152,14 @@ func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, err
 	return response, nil
 }
 
-func (p *PostsService) getProfileScreen(userId string, isSelf bool) ([]api.GetPostsResponse, error) {
+func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) ([]api.GetPostsResponse, error) {
+
+	if (!isSelf && len(forUserId) == 0) || len(userId) == 0 {
+		return []api.GetPostsResponse{}, fmt.Errorf("UserId mising")
+	}
+
 	client := p.PostRepo
-	user, err := client.GetUserHomeProfileScreen(userId)
+	user, err := client.GetUserHomeProfileScreen(userId, forUserId)
 
 	if err != nil {
 		return []api.GetPostsResponse{}, err
@@ -145,15 +167,15 @@ func (p *PostsService) getProfileScreen(userId string, isSelf bool) ([]api.GetPo
 
 	var response []api.GetPostsResponse
 
-	var showEditButton bool
+	showEditButton := false
 	if isSelf {
 		showEditButton = true
 	}
 	userFeedItem := api.GetPostsResponse{
 		UserId:        userId,
 		UserName:      user.Username,
-		IsFollowed:    true,
-		ShowFollowBtn: false,
+		IsFollowed:    len(user.Followers) > 0,
+		ShowFollowBtn: true,
 		ShowEditBtn:   showEditButton,
 		UserPhoto:     user.Username,
 		IsLiked:       false,
@@ -163,7 +185,6 @@ func (p *PostsService) getProfileScreen(userId string, isSelf bool) ([]api.GetPo
 
 		item := userFeedItem
 		item.Text = post.Text
-		item.PostColor = post.Color
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = fmt.Sprint(post.CreatedAt)
@@ -198,7 +219,6 @@ func (p *PostsService) getExploreScreen(userId string) ([]api.GetPostsResponse, 
 		postItem := api.GetPostsResponse{
 			UserId:          post.Author.UserId,
 			UserName:        post.Author.Username,
-			PostColor:       post.Color,
 			ShowEditBtn:     false,
 			ShowFollowBtn:   true,
 			ShowLikeSection: true,

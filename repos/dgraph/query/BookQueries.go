@@ -40,3 +40,57 @@ func (repo BookRepo) GetBooks(userId string) (model.User, error) {
 	mapstructure.Decode(response["queryUser"], &user)
 	return user, nil
 }
+
+func (repo BookRepo) CreateOrGetBook(bookId, bookName string) (string, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`{
+			queryBook(filter: {id: "%s", or: {name: {eq: "%s"}}}){
+			  id
+			}
+		  }
+		  `, bookId, bookName),
+	}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return "", err
+	}
+
+	var books []model.Book
+	mapstructure.Decode(response["queryBook"], &books)
+
+	if len(books) == 0 {
+		return repo.CreateBook(bookName)
+	}
+
+	return books[0].Id, nil
+}
+
+func (repo BookRepo) CreateBook(bookName string) (string, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			addBook(input: {name: "%s"}){
+			  book{
+				id
+			  }
+			}
+		  }
+		  `, bookName),
+	}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return "", err
+	}
+
+	var books []model.Book
+	mapstructure.Decode(response["addBook"], &books)
+
+	return "fasfd", nil
+}

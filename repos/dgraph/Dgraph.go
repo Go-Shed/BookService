@@ -41,7 +41,7 @@ func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
 		log.Fatal(err)
 	}
 
-	client := &http.Client{Timeout: time.Second * 5}
+	client := &http.Client{Timeout: time.Second * 10}
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err

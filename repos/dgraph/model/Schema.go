@@ -15,17 +15,13 @@ type User struct {
 type Post struct {
 	Id             string    `json:"id,omitempty"`
 	Text           string    `json:"text,omitempty"`
-	Color          string    `json:"color,omitempty"`
 	CreatedAt      string    `json:"createdAt,omitempty"`
 	UpdatedAt      string    `json:"updatedAt,omitempty"`
 	LikesAggregate Aggregate `json:"-"`
 	Likes          []User    `json:"likes,omitempty"`
 	Author         User      `json:"author,omitempty"`
 	Book           Book      `json:"book,omitempty"`
-}
-
-type Aggregate struct {
-	Count int64 `json:"count,omitempty"`
+	IsDeleted      bool      `json:"isDeleted,omitempty"`
 }
 
 type Book struct {
@@ -33,6 +29,10 @@ type Book struct {
 	Name  string `json:"name,omitempty"`
 	Posts []Post `json:"posts,omitempty"`
 	Users []User `json:"users,omitempty"`
+}
+
+type Aggregate struct {
+	Count int64 `json:"count,omitempty"`
 }
 
 /**

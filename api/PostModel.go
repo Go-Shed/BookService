@@ -3,6 +3,8 @@ package api
 type GetPostsRequest struct {
 	UserId     string `json:"user_id"`
 	ScreenName string `json:"screen_name"`
+	ForUserID  string `json:"for_user_id"`
+	IsSelf     bool   `json:"is_self"`
 }
 
 type GetPostsResponse struct {
@@ -25,7 +27,6 @@ type AddPostRequest struct {
 	Post      string `json:"post"`
 	BookTitle string `json:"book_title"`
 	BookId    string `json:"book_id"`
-	PostColor string `json:"post_color"`
 }
 
 type UpdatePostRequest struct {

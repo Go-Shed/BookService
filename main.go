@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"shed/bookservice/handlers"
 	auth "shed/bookservice/handlers/Auth"
-	"time"
+	"shed/bookservice/services"
 
 	"github.com/gorilla/mux"
 )
@@ -39,15 +37,18 @@ func handleRequests() *mux.Router {
 
 func main() {
 
-	router := handleRequests()
+	// router := handleRequests()
 
-	fmt.Println("Starting server")
-	srv := &http.Server{
-		Handler:      router,
-		Addr:         "localhost:8000",
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
-	}
+	// fmt.Println("Starting server")
+	// srv := &http.Server{
+	// 	Handler:      router,
+	// 	Addr:         "localhost:8000",
+	// 	WriteTimeout: 5 * time.Second,
+	// 	ReadTimeout:  5 * time.Second,
+	// }
 
-	log.Fatal(srv.ListenAndServe())
+	// log.Fatal(srv.ListenAndServe())
+
+	srv := services.NewPostsService()
+	srv.AddPost("Yes I am working", "efgh", "", "Six of crows")
 }

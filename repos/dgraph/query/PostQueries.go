@@ -76,7 +76,7 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 	return user, nil
 }
 
-func (repo PostRepo) GetUserHomeProfileScreen(userId string) (model.User, error) {
+func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.User, error) {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`query MyQuery {
@@ -91,12 +91,15 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId string) (model.User, error)
 				  likes(filter: {userId: {eq: "%s"}}) {
 					userId
 				  }
+				  followers(filter: {userId: {eq: "%s"}}) {
+					userId
+				  }
 				  likesAggregate{
 					  count
 				  }
         }
 			}
-}`, userId, userId)}
+}`, forUserId, userId, userId)}
 
 	response, err := client.Do(query)
 
@@ -148,28 +151,58 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 	return posts, nil
 }
 
-func (repo PostRepo) CreatePost(post model.Post) (model.Post, error) {
+func (repo PostRepo) CreatePost(user model.User) error {
+
+	type Userid struct {
+		Eq string `json:"eq"`
+	}
+
+	type Filter struct {
+		UserId Userid `json:"userId"`
+	}
+
+	type Set struct {
+		Books model.Book `json:"books"`
+		Posts model.Post `json:"posts"`
+	}
+
+	type Patch struct {
+		Filter Filter `json:"filter"`
+		Set    Set    `json:"set"`
+	}
+
+	patch := Patch{
+		Filter: Filter{
+			UserId: Userid{
+				Eq: user.UserId,
+			},
+		},
+
+		Set: Set{
+			Books: user.Books[0],
+			Posts: user.Posts[0],
+		},
+	}
 
 	client := repo.client
 	query := dgraph.Request{
-		Query: `mutation addPost($patch: [AddPostInput!]!) {
-			addPost(input: $patch) {
-			  post {
-				id
-			  }
-			}
-		  }`, Variables: dgraph.Variables{Patch: post}, Operation: "addPost"}
+		Query: `mutation addPostForUser($patch: UpdateUserInput!) {
+			updateUser(input: $patch) {
+    		user{
+       			posts{
+          		id
+        	}
+     	 }
+		}
+	}`, Variables: dgraph.Variables{Patch: patch}, Operation: "updateUser"}
 
-	response, err := client.Do(query)
+	_, err := client.Do(query)
 
 	if err != nil {
-		return model.Post{}, err
+		return err
 	}
 
-	data := response["addPost"].(map[string]interface{})
-	var createdPost []model.Post
-	mapstructure.Decode(data["post"], &createdPost)
-	return createdPost[0], nil
+	return nil
 }
 
 func (repo PostRepo) UpdatePost(post model.Post) (model.Post, error) {
@@ -261,3 +294,21 @@ func (repo PostRepo) DeletePost(postId string) error {
 
 	return nil
 }
+
+/**
+
+{ "patch":
+  { "filter": {
+    "userId": {"eq": "abcd"}
+    },
+    "set": {
+      "books": {"id": "0x15"},
+      "posts": {"text": "this is another testing", "book": {"id": "0x15"},
+      	"createdAt": "2020-10-23", "updatedAt": "2020-10-23", "isDeleted": false
+      }
+    }
+  }
+}
+
+
+**/
