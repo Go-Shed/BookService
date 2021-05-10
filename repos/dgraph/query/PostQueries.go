@@ -239,3 +239,25 @@ func (repo PostRepo) UnlikePost(postId, userId string) error {
 
 	return nil
 }
+
+func (repo PostRepo) DeletePost(postId string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updatePost(input: {filter: {id: "%s"}, set: {isDeleted: true}}){
+			  post{
+				id
+			  }
+			}
+		  }
+		  `, postId), Operation: "updatePost"}
+
+	_, err := client.Do(query)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

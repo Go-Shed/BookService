@@ -33,6 +33,6 @@ type UpdatePostRequest struct {
 	PostId string `json:"post_id"`
 }
 
-type LikeActionPost struct {
+type PostIdRequest struct {
 	PostId string `json:"post_id"`
 }

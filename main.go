@@ -30,8 +30,10 @@ func handleRequests() *mux.Router {
 	router.Handle("/unfollow", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UnfollowUser))).Methods("POST")
 	router.Handle("/like", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.LikePost))).Methods("POST")
 	router.Handle("/unlike", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.UnlikePost))).Methods("POST")
-	router.HandleFunc("/getPosts", userHandler.SearchUser).Methods("POST")
+	router.HandleFunc("/searchUser", userHandler.SearchUser).Methods("POST")
 	router.HandleFunc("/getBooks", bookHandler.GetBooks).Methods("POST")
+	router.HandleFunc("/deletePost", postsHandler.DeletePost).Methods("POST")
+
 	return router
 }
 

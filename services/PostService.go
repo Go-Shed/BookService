@@ -79,6 +79,17 @@ func (p *PostsService) UnlikePost(postId, userId string) error {
 	return nil
 }
 
+func (p *PostsService) DeletePost(postId string) error {
+	client := p.PostRepo
+
+	err := client.DeletePost(postId)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, error) {
 
 	client := p.PostRepo
