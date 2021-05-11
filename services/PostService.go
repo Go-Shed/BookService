@@ -133,6 +133,7 @@ func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, err
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = fmt.Sprint(post.CreatedAt)
+			item.Book = api.GetBooksResponse{BookId: post.Book.Id, BookName: post.Book.Name}
 
 			if len(post.Likes) > 0 {
 				item.IsLiked = true
@@ -184,6 +185,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = fmt.Sprint(post.CreatedAt)
+		item.Book = api.GetBooksResponse{BookId: post.Book.Id, BookName: post.Book.Name}
 
 		if len(post.Likes) > 0 {
 			item.IsLiked = true
@@ -225,6 +227,7 @@ func (p *PostsService) getExploreScreen(userId string) ([]api.GetPostsResponse, 
 			PostId:          post.Id,
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       fmt.Sprint(post.CreatedAt),
+			Book:            api.GetBooksResponse{BookId: post.Book.Id, BookName: post.Book.Name},
 		}
 
 		if len(post.Likes) > 0 {

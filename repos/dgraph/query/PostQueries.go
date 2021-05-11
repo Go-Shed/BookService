@@ -25,6 +25,10 @@ func (repo PostRepo) GetUserPosts(userId string) model.User {
 				  id
 				  title
 				  text
+				  book{
+					name
+					id
+				  }
 			  }
 			}
 		  }`, userId)}
@@ -52,7 +56,6 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 				posts {
 				  id
 				  text
-				  color
 				  createdAt
 				  likes(filter: {userId: {eq: "%s"}}) {
 					userId
@@ -60,6 +63,10 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 				  likesAggregate{
 					  count
 				  }
+				  book{
+					name
+					id
+				}
 				}
 			  }
 			}
@@ -86,7 +93,6 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
     		posts {
 				  id
 				  text
-				  color
 				  createdAt
 				  likes(filter: {userId: {eq: "%s"}}) {
 					userId
@@ -97,6 +103,10 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
 				  likesAggregate{
 					  count
 				  }
+				  book{
+					name
+					id
+				}
         }
 			}
 }`, forUserId, userId, userId)}
@@ -127,14 +137,16 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 				}
 			  }
 			  text
-			  color
 			  likesAggregate {
 				count
 			  }
 			  likes(filter: {userId: {eq: "%s"}}) {
 				userId
 			  }
-			  color
+			  book{
+				name
+				id
+				}
 			}
 		  }
 		  `, userId, userId),
