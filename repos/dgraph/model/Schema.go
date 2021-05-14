@@ -2,7 +2,7 @@ package model
 
 type User struct {
 	UserId    string `json:"userId,omitempty"`
-	Username  string `json:"username,omitempty"`
+	Username  string `json:"userName,omitempty"`
 	UserPhoto string `json:"userPhoto,omitempty"`
 	Followers []User `json:"followers,omitempty"`
 	Following []User `json:"following,omitempty"`

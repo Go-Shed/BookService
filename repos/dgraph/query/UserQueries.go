@@ -87,7 +87,7 @@ func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 		Query: `mutation addUser($patch: [AddUserInput!]!) {
 			addUser(input: $patch) {
 			  user {
-				username
+				userName
 			  }
 			}
 		  }`, Variables: dgraph.Variables{Patch: newUser}, Operation: "addUser"}
