@@ -21,7 +21,7 @@ func NewPostsService() PostsService {
 	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo()}
 }
 
-func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf bool) ([]api.GetPostsResponse, error) {
+func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf bool) (api.GetPostsResponse, error) {
 	if screenName == constants.SCREEN_HOME {
 		return p.getHomeScreen(userId)
 	} else if screenName == constants.SCREEN_PROFILE {
@@ -104,20 +104,20 @@ func (p *PostsService) DeletePost(postId string) error {
 	return nil
 }
 
-func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, error) {
+func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error) {
 
 	client := p.PostRepo
 	user, err := client.GetUserFeedHomeScreen(userId)
 
 	if err != nil {
-		return []api.GetPostsResponse{}, err
+		return api.GetPostsResponse{}, err
 	}
 
-	var response []api.GetPostsResponse
+	var response []api.GetPostResponse
 
 	for _, following := range user.Following {
 
-		userFeedItem := api.GetPostsResponse{
+		userFeedItem := api.GetPostResponse{
 			UserId:        following.UserId,
 			UserName:      following.Username,
 			IsFollowed:    true,
@@ -146,29 +146,37 @@ func (p *PostsService) getHomeScreen(userId string) ([]api.GetPostsResponse, err
 	sort.Slice(response, func(i, j int) bool {
 		return response[i].CreatedAt > response[j].CreatedAt
 	})
-	return response, nil
+	return api.GetPostsResponse{Posts: response}, nil
 }
 
-func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) ([]api.GetPostsResponse, error) {
+func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (api.GetPostsResponse, error) {
 
 	if (!isSelf && len(forUserId) == 0) || len(userId) == 0 {
-		return []api.GetPostsResponse{}, fmt.Errorf("UserId mising")
+		fmt.Println(isSelf)
+		return api.GetPostsResponse{}, fmt.Errorf("UserId mising")
 	}
 
 	client := p.PostRepo
+
+	if isSelf {
+		forUserId = userId
+	} else {
+		userId = forUserId
+		forUserId = userId
+	}
 	user, err := client.GetUserHomeProfileScreen(userId, forUserId)
 
 	if err != nil {
-		return []api.GetPostsResponse{}, err
+		return api.GetPostsResponse{}, err
 	}
 
-	var response []api.GetPostsResponse
+	var response []api.GetPostResponse
 
 	showEditButton := false
 	if isSelf {
 		showEditButton = true
 	}
-	userFeedItem := api.GetPostsResponse{
+	userFeedItem := api.GetPostResponse{
 		UserId:        userId,
 		UserName:      user.Username,
 		IsFollowed:    len(user.Followers) > 0,
@@ -198,23 +206,23 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		return response[i].CreatedAt > response[j].CreatedAt
 	})
 
-	return response, nil
+	return api.GetPostsResponse{Posts: response}, nil
 }
 
-func (p *PostsService) getExploreScreen(userId string) ([]api.GetPostsResponse, error) {
+func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, error) {
 
 	client := p.PostRepo
 	posts, err := client.GetExporeScreen(userId)
 
 	if err != nil {
-		return []api.GetPostsResponse{}, err
+		return api.GetPostsResponse{}, err
 	}
 
-	var response []api.GetPostsResponse
+	var response []api.GetPostResponse
 
 	for _, post := range posts {
 
-		postItem := api.GetPostsResponse{
+		postItem := api.GetPostResponse{
 			UserId:          post.Author.UserId,
 			UserName:        post.Author.Username,
 			ShowEditBtn:     false,
@@ -244,5 +252,5 @@ func (p *PostsService) getExploreScreen(userId string) ([]api.GetPostsResponse, 
 		return response[i].LikeCount > response[j].LikeCount
 	})
 
-	return response, nil
+	return api.GetPostsResponse{Posts: response}, nil
 }

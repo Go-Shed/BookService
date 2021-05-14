@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
@@ -26,11 +27,12 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName, request.ForUserID, request.IsSelf)
 
 	if err != nil {
+		fmt.Println(err)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
 		return
 	}
 
-	if len(response) == 0 {
+	if len(response.Posts) == 0 {
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Message: "No Posts here, why not follow someone!"})
 		return
 	}

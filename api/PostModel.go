@@ -8,6 +8,10 @@ type GetPostsRequest struct {
 }
 
 type GetPostsResponse struct {
+	Posts []GetPostResponse `json:"posts"`
+}
+
+type GetPostResponse struct {
 	UserId          string           `json:"user_id"`
 	UserPhoto       string           `json:"user_photo"`
 	Text            string           `json:"text"`
