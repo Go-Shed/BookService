@@ -121,7 +121,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 			UserId:        following.UserId,
 			UserName:      following.Username,
 			IsFollowed:    true,
-			ShowFollowBtn: true,
+			ShowFollowBtn: false,
 			ShowEditBtn:   false,
 			UserPhoto:     following.UserPhoto,
 			IsLiked:       false,

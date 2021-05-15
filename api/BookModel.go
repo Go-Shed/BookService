@@ -1,7 +1,8 @@
 package api
 
 type GetBooksRequest struct {
-	UserId string `json:"user_id"`
+	ProfileUserId string `json:"profile_user_id"`
+	IsSelf        bool   `json:"is_self"`
 }
 
 type GetBooksResponse struct {
