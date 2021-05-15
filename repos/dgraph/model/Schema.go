@@ -1,15 +1,17 @@
 package model
 
 type User struct {
-	UserId    string `json:"userId,omitempty"`
-	Username  string `json:"userName,omitempty"`
-	UserPhoto string `json:"userPhoto,omitempty"`
-	Followers []User `json:"followers,omitempty"`
-	Following []User `json:"following,omitempty"`
-	Email     string `json:"email,omitempty"`
-	Posts     []Post `json:"posts,omitempty"`
-	Likes     []Post `json:"likes,omitempty"`
-	Books     []Book `json:"books,omitempty"`
+	UserId             string    `json:"userId,omitempty"`
+	Username           string    `json:"userName,omitempty"`
+	UserPhoto          string    `json:"userPhoto,omitempty"`
+	Followers          []User    `json:"followers,omitempty"`
+	Following          []User    `json:"following,omitempty"`
+	Email              string    `json:"email,omitempty"`
+	Posts              []Post    `json:"posts,omitempty"`
+	Likes              []Post    `json:"likes,omitempty"`
+	Books              []Book    `json:"books,omitempty"`
+	FollowersAggregate Aggregate `json:"-"`
+	FollowingAggregate Aggregate `json:"-"`
 }
 
 type Post struct {

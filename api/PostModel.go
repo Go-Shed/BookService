@@ -15,7 +15,6 @@ type GetPostResponse struct {
 	UserId          string           `json:"user_id"`
 	UserPhoto       string           `json:"user_photo"`
 	Text            string           `json:"text"`
-	PostColor       string           `json:"post_color"`
 	ShowFollowBtn   bool             `json:"show_follow_button"`
 	ShowEditBtn     bool             `json:"show_edit_button"`
 	ShowLikeSection bool             `json:"show_like_section"`

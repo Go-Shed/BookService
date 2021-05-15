@@ -40,14 +40,47 @@ func (repo UserRepo) GetUsers(token string) model.User {
 	return user
 }
 
+func (repo UserRepo) FetchProfile(userId, profileUserId string) (model.User, error) {
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query {
+			getUser(userId: "%s") {
+    userId
+    userName
+    userPhoto
+    email
+    followersAggregate{
+      count
+    }
+    followingAggregate{
+      count
+    }
+    followers(filter: {userId: {eq: "%s"}}){
+				  userId
+				}
+			  
+	}
+}`, profileUserId, userId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	var user model.User
+	mapstructure.Decode(response["getUser"], &user)
+	return user, nil
+}
+
 func (repo UserRepo) FollowUser(user, userToFollow string) error {
 
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`mutation {
-			updateUser(input: {filter: {username: {eq: "%s"}}, set: {following: {username: "%s"}}}){
+			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {following: {userId: "%s"}}}){
 			  user{
-				username
+				userId
 			  }
 			}
 		  }
@@ -65,7 +98,7 @@ func (repo UserRepo) UnFollowUser(user, userToUnFollow string) error {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`mutation {
-			updateUser(input: {filter: {username: {eq: "%s"}}, remove: {following: {username: "%s"}}}){
+			updateUser(input: {filter: {userId: {eq: "%s"}}, remove: {following: {userId: "%s"}}}){
 			  user{
 				username
 			  }

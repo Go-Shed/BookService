@@ -65,3 +65,21 @@ func (u *userHandler) SearchUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Data: user})
 }
+
+func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.FetchProfileRequest
+	json.Unmarshal(reqBody, &request)
+
+	response, err := u.UserService.FetchProfile(uid, request.ProfileUserId, request.IsSelf)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Something went wrong. Please try again!"})
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
