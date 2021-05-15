@@ -51,6 +51,8 @@ func (u *UserService) FetchProfile(userId, profileUserId string, isSelf bool) (a
 		isFollowing = true
 	}
 
+	// fmt.Printf("%+v", response)
+
 	return api.FetchProfileResponse{
 		UserPhoto:   response.UserPhoto,
 		Email:       response.Email,
