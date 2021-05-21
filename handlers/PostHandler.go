@@ -20,11 +20,14 @@ func NewPostHandler() postHandler {
 
 func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var request api.GetPostsRequest
 	json.Unmarshal(reqBody, &request)
 
-	response, err := p.PostsService.GetPosts(request.UserId, request.ScreenName, request.ForUserID, request.IsSelf)
+	response, err := p.PostsService.GetPosts(uid, request.ScreenName, request.ForUserID, request.IsSelf)
 
 	if err != nil {
 		fmt.Println(err)
