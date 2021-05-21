@@ -97,6 +97,9 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
 				  likes(filter: {userId: {eq: "%s"}}) {
 					userId
 				  }
+				  followers(filter: {userId: {eq: "%s"}}){
+					userId
+				  }
 				  likesAggregate{
 					  count
 				  }
@@ -106,7 +109,7 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
 				}
         }
 			}
-}`, forUserId, userId)}
+}`, forUserId, userId, userId)}
 
 	response, err := client.Do(query)
 

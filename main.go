@@ -12,7 +12,6 @@ import (
 )
 
 /*
-
 Mux mathches routes in the order they were defined
 */
 func handleRequests() *mux.Router {

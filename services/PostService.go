@@ -152,7 +152,6 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (api.GetPostsResponse, error) {
 
 	if (!isSelf && len(forUserId) == 0) || len(userId) == 0 {
-		fmt.Println(isSelf)
 		return api.GetPostsResponse{}, fmt.Errorf("UserId mising")
 	}
 
@@ -172,15 +171,16 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 
 	var response []api.GetPostResponse
 
-	showEditButton := false
+	showEditButton, showFollowBtn := false, true
 	if isSelf {
 		showEditButton = true
+		showFollowBtn = false
 	}
 	userFeedItem := api.GetPostResponse{
 		UserId:        userId,
 		UserName:      user.Username,
 		IsFollowed:    len(user.Followers) > 0,
-		ShowFollowBtn: true,
+		ShowFollowBtn: showFollowBtn,
 		ShowEditBtn:   showEditButton,
 		UserPhoto:     user.Username,
 		IsLiked:       false,
