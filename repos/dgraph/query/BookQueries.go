@@ -89,8 +89,9 @@ func (repo BookRepo) CreateBook(bookName string) (string, error) {
 		return "", err
 	}
 
-	var book model.Book
-	mapstructure.Decode(response["addBook"], &book)
+	var book []model.Book
+	data := response["addBook"].(map[string]interface{})
+	mapstructure.Decode(data["book"], &book)
 
-	return book.Id, nil
+	return book[0].Id, nil
 }
