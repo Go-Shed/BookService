@@ -25,7 +25,7 @@ func (u *UserService) UnfollowUser(userId, userIdToUnFollow string) error {
 	return err
 }
 
-func (u *UserService) SearchUser(username string) model.User {
+func (u *UserService) SearchUser(username string) []model.User {
 	user := u.UserRepo.SearchUser(username)
 	return user
 }

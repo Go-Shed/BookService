@@ -3,6 +3,7 @@ package api
 type GetBooksRequest struct {
 	ProfileUserId string `json:"profile_user_id"`
 	IsSelf        bool   `json:"is_self"`
+	ScreenName    string `json:"screen_name"`
 }
 
 type GetBooksResponse struct {

@@ -5,7 +5,7 @@ type FollowUserRequest struct {
 }
 
 type SearchUserRequest struct {
-	UserName string `json:"user_name,omitempty"`
+	Search string `json:"search,omitempty"`
 }
 
 type FetchProfileResponse struct {

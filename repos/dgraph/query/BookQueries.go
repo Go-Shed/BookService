@@ -36,9 +36,9 @@ func (repo BookRepo) GetBooks(userId string) (model.User, error) {
 		return model.User{}, err
 	}
 
-	var user model.User
+	var user []model.User
 	mapstructure.Decode(response["queryUser"], &user)
-	return user, nil
+	return user[0], nil
 }
 
 func (repo BookRepo) CreateOrGetBook(bookId, bookName string) (string, error) {

@@ -61,7 +61,7 @@ func (u *userHandler) SearchUser(w http.ResponseWriter, r *http.Request) {
 	var request api.SearchUserRequest
 	json.Unmarshal(reqBody, &request)
 
-	user := u.UserService.SearchUser(request.UserName)
+	user := u.UserService.SearchUser(request.Search)
 
 	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Data: user})
 }

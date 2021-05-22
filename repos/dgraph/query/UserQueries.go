@@ -40,7 +40,7 @@ func (repo UserRepo) GetUsers(token string) model.User {
 	return user
 }
 
-func (repo UserRepo) FetchProfile(userId, profileUserId string) (model.User, error) {
+func (repo UserRepo) FetchProfile(profileUserId, userId string) (model.User, error) {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`query {
@@ -100,7 +100,7 @@ func (repo UserRepo) UnFollowUser(user, userToUnFollow string) error {
 		Query: fmt.Sprintf(`mutation {
 			updateUser(input: {filter: {userId: {eq: "%s"}}, remove: {following: {userId: "%s"}}}){
 			  user{
-				username
+				userName
 			  }
 			}
 		  }
@@ -140,7 +140,7 @@ func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 	return user[0], nil
 }
 
-func (repo UserRepo) SearchUser(username string) model.User {
+func (repo UserRepo) SearchUser(username string) []model.User {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -155,10 +155,10 @@ func (repo UserRepo) SearchUser(username string) model.User {
 	response, err := client.Do(query)
 
 	if err != nil {
-		return model.User{}
+		return []model.User{}
 	}
 
-	var user model.User
+	var user []model.User
 	mapstructure.Decode(response["queryUser"], &user)
 	return user
 }

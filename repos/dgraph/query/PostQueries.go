@@ -90,14 +90,14 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
 			getUser(userId: "%s") {
 				userName
 				userPhoto
+				followers(filter: {userId: {eq: "%s"}}){
+					userId
+				  }
     		posts {
 				  id
 				  text
 				  createdAt
 				  likes(filter: {userId: {eq: "%s"}}) {
-					userId
-				  }
-				  followers(filter: {userId: {eq: "%s"}}){
 					userId
 				  }
 				  likesAggregate{
