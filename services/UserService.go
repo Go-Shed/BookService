@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"shed/bookservice/api"
-	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
 )
 
@@ -25,9 +24,30 @@ func (u *UserService) UnfollowUser(userId, userIdToUnFollow string) error {
 	return err
 }
 
-func (u *UserService) SearchUser(username string) []model.User {
-	user := u.UserRepo.SearchUser(username)
-	return user
+func (u *UserService) SearchUser(userID, username string) api.SearchUserResponse {
+	users := u.UserRepo.SearchUser(userID, username)
+
+	var response []api.SearchResult
+
+	for _, user := range users {
+
+		result := api.SearchResult{
+			UserPhoto:        user.UserPhoto,
+			UserId:           user.UserId,
+			UserName:         user.Username,
+			ShowFollowButton: false,
+			IsFollowed:       false,
+		}
+
+		if len(user.Followers) > 0 {
+			result.IsFollowed = true
+			result.ShowFollowButton = true
+		}
+
+		response = append(response, result)
+	}
+
+	return api.SearchUserResponse{SearchResults: response}
 }
 
 func (u *UserService) FetchProfile(userId, profileUserId string, isSelf bool) (api.FetchProfileResponse, error) {

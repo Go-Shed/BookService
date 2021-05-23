@@ -140,7 +140,7 @@ func (repo UserRepo) CreateUser(newUser model.User) (model.User, error) {
 	return user[0], nil
 }
 
-func (repo UserRepo) SearchUser(username string) []model.User {
+func (repo UserRepo) SearchUser(userId, username string) []model.User {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -148,9 +148,13 @@ func (repo UserRepo) SearchUser(username string) []model.User {
 			queryUser(filter: {userName: {regexp: "/.*%s.*/i"}}){
 			 userId
 			  userName
+			  userPhoto
+			  followers(filter: {userId: {eq: "%s"}}){
+				userId
+			  }
 			}
 		  }
-		  `, username)}
+		  `, username, userId)}
 
 	response, err := client.Do(query)
 

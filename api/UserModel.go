@@ -8,6 +8,18 @@ type SearchUserRequest struct {
 	Search string `json:"search,omitempty"`
 }
 
+type SearchUserResponse struct {
+	SearchResults []SearchResult `json:"search_results"`
+}
+
+type SearchResult struct {
+	UserPhoto        string `json:"user_photo"`
+	ShowFollowButton bool   `json:"show_follow_button"`
+	IsFollowed       bool   `json:"is_followed"`
+	UserName         string `json:"user_name"`
+	UserId           string `json:"user_id"`
+}
+
 type FetchProfileResponse struct {
 	IsFollowing bool   `json:"is_following"`
 	UserPhoto   string `json:"user_photo,omitempty"`

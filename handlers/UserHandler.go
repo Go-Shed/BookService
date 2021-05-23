@@ -57,13 +57,16 @@ func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 
 func (u *userHandler) SearchUser(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var request api.SearchUserRequest
 	json.Unmarshal(reqBody, &request)
 
-	user := u.UserService.SearchUser(request.Search)
+	results := u.UserService.SearchUser(uid, request.Search)
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Data: user})
+	json.NewEncoder(w).Encode(results)
 }
 
 func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
