@@ -29,6 +29,7 @@ func (u *userHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	err := u.UserService.FollowUser(uid, request.UserId)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}
@@ -48,6 +49,7 @@ func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	err := u.UserService.UnfollowUser(uid, request.UserId)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}
@@ -81,7 +83,9 @@ func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
 	response, err := u.UserService.FetchProfile(uid, request.ProfileUserId, request.IsSelf)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Something went wrong. Please try again!"})
+		return
 	}
 
 	json.NewEncoder(w).Encode(response)

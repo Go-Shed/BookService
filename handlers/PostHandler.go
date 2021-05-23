@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
@@ -30,7 +29,7 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	response, err := p.PostsService.GetPosts(uid, request.ScreenName, request.ForUserID, request.IsSelf)
 
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
 		return
 	}
@@ -52,6 +51,7 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &request)
 
 	if len(request.Post) == 0 || len(uid) == 0 || (len(request.BookId) == 0 && len(request.BookTitle) == 0) {
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "post or book empty"})
 		return
 	}
@@ -59,6 +59,7 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	err := p.PostsService.AddPost(request.Post, uid, request.BookId, request.BookTitle)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
@@ -76,6 +77,7 @@ func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	err := p.PostsService.UpdatePost(request.PostId, request.Text, uid)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}
@@ -94,6 +96,7 @@ func (p *postHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 	err := p.PostsService.LikePost(request.PostId, uid)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}
@@ -112,6 +115,7 @@ func (p *postHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	err := p.PostsService.UnlikePost(request.PostId, uid)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}
@@ -130,6 +134,7 @@ func (p *postHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	err := p.PostsService.DeletePost(request.PostId)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
 		return
 	}

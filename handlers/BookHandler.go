@@ -25,6 +25,7 @@ func (handler *bookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
 
 	if len(uid) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "Sign in to explore world around books!"})
 	}
 
