@@ -1,8 +1,12 @@
 package api
 
 type ApiResponse struct {
-	ResponseCode int         `json:"response_code,omitempty"`
-	Error        string      `json:"error,omitempty"`
-	Data         interface{} `json:"data,omitempty"`
-	Message      string      `json:"message,omitempty"`
+	HTTPCode int         `json:"http_code"`
+	Data     interface{} `json:"data,omitempty"`
+	Message  string      `json:"msg"`
+}
+
+type ErrorResponse struct {
+	HTTPCode int    `json:"http_code"`
+	Message  string `json:"msg"`
 }

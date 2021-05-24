@@ -30,12 +30,13 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
 		return
 	}
 
 	if len(response.Posts) == 0 {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Message: "No Posts here, why not follow someone!"})
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "No Posts here, why not follow someone!"})
 		return
 	}
 
@@ -52,7 +53,7 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 
 	if len(request.Post) == 0 || len(uid) == 0 || (len(request.BookId) == 0 && len(request.BookTitle) == 0) {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "post or book empty"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "post or book empty"})
 		return
 	}
 
@@ -60,11 +61,11 @@ func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Message: "Post created successfully"})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Post created successfully"})
 }
 
 func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -78,11 +79,11 @@ func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Post updated Successfully"})
 }
 
 func (p *postHandler) LikePost(w http.ResponseWriter, r *http.Request) {
@@ -97,11 +98,11 @@ func (p *postHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200})
 }
 
 func (p *postHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
@@ -116,28 +117,29 @@ func (p *postHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200}) ////write response to http writer
 }
 
 func (p *postHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-	// uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var request api.PostIdRequest
 	json.Unmarshal(reqBody, &request)
 
-	err := p.PostsService.DeletePost(request.PostId)
+	err := p.PostsService.DeletePost(request.PostId, uid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200}) ////write response to http writer
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Post deleted successfully"}) ////write response to http writer
 }

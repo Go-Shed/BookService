@@ -27,7 +27,8 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &request)
 
 	if len(request.Email) == 0 || len(request.Username) == 0 || len(uid) == 0 {
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "Username, email or userId can not be empty"})
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 400, Message: "Username, email or userId can not be empty"})
 		return
 	}
 
@@ -36,9 +37,9 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Error: "UserId already exists"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "UserId already exists"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200, Error: "", Data: uid})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Data: uid})
 }

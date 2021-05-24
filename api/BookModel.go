@@ -7,6 +7,10 @@ type GetBooksRequest struct {
 }
 
 type GetBooksResponse struct {
+	Books []BookResponse `json:"books"`
+}
+
+type BookResponse struct {
 	BookId   string `json:"book_id"`
 	BookName string `json:"book_name"`
 }

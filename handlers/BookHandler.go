@@ -26,14 +26,20 @@ func (handler *bookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 
 	if len(uid) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 400, Message: "Sign in to explore world around books!"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "Sign in to explore world around books!"})
 	}
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var request api.GetBooksRequest
 	json.Unmarshal(reqBody, &request)
 
-	response, _ := handler.bookService.GetBooks(uid, request.ProfileUserId, request.IsSelf)
+	response, err := handler.bookService.GetBooks(uid, request.ProfileUserId, request.IsSelf)
+
+	if err != nil || len(response.Books) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 400, Message: "No books found"})
+		return
+	}
 
 	json.NewEncoder(w).Encode(response)
 }

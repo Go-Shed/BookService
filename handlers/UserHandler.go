@@ -30,11 +30,11 @@ func (u *userHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200})
 }
 
 func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
@@ -50,11 +50,11 @@ func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Error: "Some error occurred, please try again"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 200})
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200})
 }
 
 func (u *userHandler) SearchUser(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +67,12 @@ func (u *userHandler) SearchUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &request)
 
 	results := u.UserService.SearchUser(uid, request.Search)
+
+	if len(results.SearchResults) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 400, Message: "No users found"})
+		return
+	}
 
 	json.NewEncoder(w).Encode(results)
 }
@@ -84,7 +90,7 @@ func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(api.ApiResponse{ResponseCode: 500, Message: "Something went wrong. Please try again!"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Something went wrong. Please try again!"})
 		return
 	}
 

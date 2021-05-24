@@ -307,20 +307,27 @@ func (repo PostRepo) DeletePost(postId string) error {
 	return nil
 }
 
-/**
+func (repo PostRepo) GetPost(postId, uid string) (model.User, error) {
 
-{ "patch":
-  { "filter": {
-    "userId": {"eq": "abcd"}
-    },
-    "set": {
-      "books": {"id": "0x15"},
-      "posts": {"text": "this is another testing", "book": {"id": "0x15"},
-      	"createdAt": "2020-10-23", "updatedAt": "2020-10-23", "isDeleted": false
-      }
-    }
-  }
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`{
+			getUser(userId: "%s") {
+			  posts(filter: {id: "%s"}){
+				id
+			  }
+			}
+		  }
+		  
+		  `, uid, postId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	var user model.User
+	mapstructure.Decode(response["getUser"], &user)
+	return user, nil
 }
-
-
-**/

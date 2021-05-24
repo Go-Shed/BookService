@@ -13,7 +13,7 @@ func NewBookService() BookService {
 	return BookService{bookRepo: query.NewBookRepo()}
 }
 
-func (p *BookService) GetBooks(userId, profileUserId string, isSelf bool) ([]api.GetBooksResponse, error) {
+func (p *BookService) GetBooks(userId, profileUserId string, isSelf bool) (api.GetBooksResponse, error) {
 	client := p.bookRepo
 
 	if !isSelf {
@@ -23,18 +23,20 @@ func (p *BookService) GetBooks(userId, profileUserId string, isSelf bool) ([]api
 	user, err := client.GetBooks(userId)
 
 	if err != nil {
-		return []api.GetBooksResponse{}, err
+		return api.GetBooksResponse{}, err
 	}
 
-	var response []api.GetBooksResponse
+	var response []api.BookResponse
 
 	for _, book := range user.Books {
-		item := api.GetBooksResponse{
+		item := api.BookResponse{
 			BookId:   book.Id,
 			BookName: book.Name,
 		}
 		response = append(response, item)
 	}
 
-	return response, nil
+	return api.GetBooksResponse{
+		Books: response,
+	}, nil
 }
