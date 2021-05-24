@@ -33,13 +33,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userRepo := query.NewUserRepo()
-	_, err := userRepo.CreateUser(model.User{Username: request.Username, UserId: uid, Email: request.Email})
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "UserId already exists"})
-		return
-	}
+	userRepo.CreateUser(model.User{Username: request.Username, UserId: uid, Email: request.Email})
 
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Data: uid})
 }
