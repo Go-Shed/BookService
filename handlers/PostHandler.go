@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
+	"shed/bookservice/common/constants"
 	auth "shed/bookservice/handlers/Auth"
 	"shed/bookservice/services"
 )
@@ -35,8 +36,9 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(response.Posts) == 0 {
+		msg := getMessageToShownOnScreen(request.ScreenName)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "No Posts here, why not follow someone!"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: msg})
 		return
 	}
 
@@ -142,4 +144,17 @@ func (p *postHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Post deleted successfully"}) ////write response to http writer
+}
+
+func getMessageToShownOnScreen(screen string) string {
+	var msg string
+
+	if screen == constants.SCREEN_HOME {
+		msg = "No Posts here, why not follow someone!"
+	} else if screen == constants.SCREEN_EXPLORE {
+		msg = "Couldn't find posts for you, try again later!"
+	} else {
+		msg = "Ah, looks like someone's been unsocial lately. Post about your favourite books and find others like you ! :) "
+	}
+	return msg
 }

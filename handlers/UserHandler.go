@@ -94,5 +94,11 @@ func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(response.UserName) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "You are lost, this profile does not exist!"})
+		return
+	}
+
 	json.NewEncoder(w).Encode(response)
 }

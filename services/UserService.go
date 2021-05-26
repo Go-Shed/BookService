@@ -31,6 +31,10 @@ func (u *UserService) SearchUser(userID, username string) api.SearchUserResponse
 
 	for _, user := range users {
 
+		if user.UserId == userID {
+			continue
+		}
+
 		result := api.SearchResult{
 			UserPhoto:        user.UserPhoto,
 			UserId:           user.UserId,
