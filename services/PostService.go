@@ -38,6 +38,7 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 
 	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
 	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
+	text = strings.Replace(text, "\n", "\\n", -1)
 
 	newBook, err := p.BookRepo.CreateOrGetBook(bookId, bookTitle)
 
@@ -58,15 +59,23 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 	return nil
 }
 
-func (p *PostsService) UpdatePost(text, userId, postId string) error {
+func (p *PostsService) UpdatePost(postId, text, bookTitle, userId string) error {
 	client := p.PostRepo
 	timeNow := time.Now().Local().String()
+	text = strings.Replace(text, "\n", "\\n", -1)
+
 	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
+
+	user, err := client.GetPost(postId, userId)
+
+	if len(user.Posts) == 0 || err != nil {
+		return fmt.Errorf("post now owned by user")
+	}
 
 	response, err := client.UpdatePost(post)
 
 	if err != nil || response.Id == "" {
-		return errors.New("post not created")
+		return errors.New("post not updated")
 	}
 	return nil
 }
@@ -135,7 +144,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 
 		for _, post := range following.Posts {
 			item := userFeedItem
-			item.Text = post.Text
+			item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = fmt.Sprint(post.CreatedAt)
@@ -195,7 +204,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 	for _, post := range user.Posts {
 
 		item := userFeedItem
-		item.Text = post.Text
+		item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = fmt.Sprint(post.CreatedAt)
@@ -237,7 +246,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			IsFollowed:      false,
 			IsLiked:         false,
 			UserPhoto:       post.Author.UserPhoto,
-			Text:            post.Text,
+			Text:            strings.Replace(post.Text, "\\n", "\n", -1),
 			PostId:          post.Id,
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       fmt.Sprint(post.CreatedAt),

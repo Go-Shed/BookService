@@ -33,8 +33,9 @@ type AddPostRequest struct {
 }
 
 type UpdatePostRequest struct {
-	Text   string `json:"text"`
-	PostId string `json:"post_id"`
+	Post      string `json:"post"`
+	PostId    string `json:"post_id"`
+	BookTitle string `json:"book_title"`
 }
 
 type PostIdRequest struct {

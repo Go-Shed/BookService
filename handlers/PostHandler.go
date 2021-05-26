@@ -77,7 +77,8 @@ func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var request api.UpdatePostRequest
 	json.Unmarshal(reqBody, &request)
-	err := p.PostsService.UpdatePost(request.PostId, request.Text, uid)
+
+	err := p.PostsService.UpdatePost(request.PostId, request.Post, request.BookTitle, uid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

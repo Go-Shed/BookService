@@ -318,7 +318,6 @@ func (repo PostRepo) GetPost(postId, uid string) (model.User, error) {
 			  }
 			}
 		  }
-		  
 		  `, uid, postId)}
 
 	response, err := client.Do(query)

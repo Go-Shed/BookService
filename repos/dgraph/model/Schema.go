@@ -42,16 +42,15 @@ Dgraph schema:
 
 type User {
   userId: String! @id
-  userName: String! @search(by: [exact])
+  userName: String! @search(by: [exact, trigram])
   userPhoto: String
   email: String
   followers: [User!]
   following: [User!] @hasInverse(field:followers)
   posts: [Post!] @hasInverse(field:author)
   likes: [Post!] @hasInverse(field:likes)
+  books:[Book!] @hasInverse(field:users)
 }
-
-
 
 type Post {
   id: ID!
@@ -62,11 +61,14 @@ type Post {
   updatedAt: DateTime!
   totalLikes: Int64
   likes: [User!]
+  book: Book! @hasInverse(field:posts)
 }
 
 type Book{
-	name: String! @id @search(by: [trigram])
+  id: String! @id
+	name: String! @search(by: [exact])
 	posts: [Post!]
 	users: [User!]
   }
+
 **/
