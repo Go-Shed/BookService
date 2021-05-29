@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
@@ -30,6 +31,7 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	response, err := p.PostsService.GetPosts(uid, request.ScreenName, request.ForUserID, request.IsSelf)
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
 		return

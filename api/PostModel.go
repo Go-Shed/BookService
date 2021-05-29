@@ -2,7 +2,7 @@ package api
 
 type GetPostsRequest struct {
 	ScreenName string `json:"screen_name"`
-	ForUserID  string `json:"for_user_id"`
+	ForUserID  string `json:"profile_user_id"`
 	IsSelf     bool   `json:"is_self"`
 }
 
