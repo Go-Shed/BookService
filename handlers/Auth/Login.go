@@ -15,7 +15,8 @@ type AddUserRequest struct {
 }
 
 type AddUserResponse struct {
-	Username string `json:"user_name"`
+	UserId            string `json:"user_id"`
+	AlreadyRegistered bool   `json:"alreadyRegistered"`
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,18 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userRepo := query.NewUserRepo()
-	userRepo.CreateUser(model.User{Username: request.Username, UserId: uid, Email: request.Email})
+	_, err := userRepo.CreateUser(model.User{Username: request.Username, UserId: uid, Email: request.Email})
 
-	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Data: uid})
+	if err != nil {
+		json.NewEncoder(w).Encode(AddUserResponse{
+			UserId:            uid,
+			AlreadyRegistered: true,
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(AddUserResponse{
+		UserId:            uid,
+		AlreadyRegistered: false,
+	})
 }
