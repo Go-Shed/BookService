@@ -44,7 +44,7 @@ func main() {
 	fmt.Println("Starting server")
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         ":80",
+		Addr:         ":8080",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
