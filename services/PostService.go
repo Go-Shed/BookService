@@ -264,7 +264,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 
 	////// sort according to likes
 	sort.Slice(response, func(i, j int) bool {
-		return response[i].LikeCount > response[j].LikeCount
+		return response[i].CreatedAt > response[j].CreatedAt
 	})
 
 	return api.GetPostsResponse{Posts: response}, nil

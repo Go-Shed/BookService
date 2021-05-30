@@ -128,6 +128,7 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 		Query: fmt.Sprintf(`{
 			queryPost {
 			  id
+			  createdAt
 			  author {
 				userId
 				userPhoto
