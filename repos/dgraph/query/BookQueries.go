@@ -38,6 +38,11 @@ func (repo BookRepo) GetBooks(userId string) (model.User, error) {
 
 	var user []model.User
 	mapstructure.Decode(response["queryUser"], &user)
+
+	if len(user) == 0 {
+		return model.User{}, nil
+	}
+
 	return user[0], nil
 }
 
