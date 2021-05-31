@@ -3,7 +3,6 @@ package services
 import (
 	"shed/bookservice/api"
 	"shed/bookservice/repos/dgraph/query"
-	"strings"
 )
 
 type BookService struct {
@@ -32,7 +31,7 @@ func (p *BookService) GetBooks(userId, profileUserId string, isSelf bool) (api.G
 	for _, book := range user.Books {
 		item := api.BookResponse{
 			BookId:   book.Id,
-			BookName: strings.Title(book.Name),
+			BookName: toUpperCase(book.Name),
 		}
 		response = append(response, item)
 	}

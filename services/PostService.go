@@ -133,13 +133,14 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 	for _, following := range user.Following {
 
 		userFeedItem := api.GetPostResponse{
-			UserId:        following.UserId,
-			UserName:      following.Username,
-			IsFollowed:    true,
-			ShowFollowBtn: false,
-			ShowEditBtn:   false,
-			UserPhoto:     following.UserPhoto,
-			IsLiked:       false,
+			UserId:          following.UserId,
+			UserName:        following.Username,
+			IsFollowed:      true,
+			ShowFollowBtn:   false,
+			ShowEditBtn:     false,
+			UserPhoto:       following.UserPhoto,
+			IsLiked:         false,
+			ShowLikeSection: true,
 		}
 
 		for _, post := range following.Posts {
@@ -148,7 +149,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = fmt.Sprint(post.CreatedAt)
-			item.Book = api.BookResponse{BookId: post.Book.Id, BookName: strings.Title(post.Book.Name)}
+			item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
 
 			if len(post.Likes) > 0 {
 				item.IsLiked = true
@@ -208,7 +209,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = fmt.Sprint(post.CreatedAt)
-		item.Book = api.BookResponse{BookId: post.Book.Id, BookName: strings.Title(post.Book.Name)}
+		item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
 
 		if len(post.Likes) > 0 {
 			item.IsLiked = true
@@ -237,6 +238,10 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 
 	for _, post := range posts {
 
+		if post.Author.UserId == userId {
+			continue
+		}
+
 		postItem := api.GetPostResponse{
 			UserId:          post.Author.UserId,
 			UserName:        post.Author.Username,
@@ -250,7 +255,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			PostId:          post.Id,
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       fmt.Sprint(post.CreatedAt),
-			Book:            api.BookResponse{BookId: post.Book.Id, BookName: strings.Title(post.Book.Name)},
+			Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
 		}
 
 		if len(post.Likes) > 0 {
@@ -268,4 +273,12 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 	})
 
 	return api.GetPostsResponse{Posts: response}, nil
+}
+
+func toUpperCase(s string) string {
+	c := strings.ToUpper(string(s[0]))
+	res := s[1:]
+	res = c + res
+
+	return res
 }
