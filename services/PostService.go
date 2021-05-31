@@ -187,18 +187,20 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 
 	var response []api.GetPostResponse
 
-	showEditButton := false
+	showEditButton, showLikeSection := false, true
 	if isSelf {
 		showEditButton = true
+		showLikeSection = false
 	}
 	userFeedItem := api.GetPostResponse{
-		UserId:        userId,
-		UserName:      user.Username,
-		IsFollowed:    len(user.Followers) > 0,
-		ShowFollowBtn: false,
-		ShowEditBtn:   showEditButton,
-		UserPhoto:     user.Username,
-		IsLiked:       false,
+		UserId:          userId,
+		UserName:        user.Username,
+		IsFollowed:      len(user.Followers) > 0,
+		ShowFollowBtn:   false,
+		ShowEditBtn:     showEditButton,
+		UserPhoto:       user.Username,
+		ShowLikeSection: showLikeSection,
+		IsLiked:         false,
 	}
 
 	for _, post := range user.Posts {
@@ -216,6 +218,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		response = append(response, item)
 	}
 
+	fmt.Println(response)
 	////// sort according to date
 	sort.Slice(response, func(i, j int) bool {
 		return response[i].CreatedAt > response[j].CreatedAt
