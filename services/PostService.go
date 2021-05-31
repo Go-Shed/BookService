@@ -187,16 +187,15 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 
 	var response []api.GetPostResponse
 
-	showEditButton, showFollowBtn := false, true
+	showEditButton := false
 	if isSelf {
 		showEditButton = true
-		showFollowBtn = false
 	}
 	userFeedItem := api.GetPostResponse{
 		UserId:        userId,
 		UserName:      user.Username,
 		IsFollowed:    len(user.Followers) > 0,
-		ShowFollowBtn: showFollowBtn,
+		ShowFollowBtn: false,
 		ShowEditBtn:   showEditButton,
 		UserPhoto:     user.Username,
 		IsLiked:       false,
