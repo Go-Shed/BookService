@@ -59,7 +59,7 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 	return nil
 }
 
-func (p *PostsService) UpdatePost(postId, text, bookTitle, userId string) error {
+func (p *PostsService) UpdatePost(postId, text, bookTitle, bookId, userId string) error {
 	client := p.PostRepo
 	timeNow := time.Now().Local().String()
 	text = strings.Replace(text, "\n", "\\n", -1)
@@ -67,21 +67,13 @@ func (p *PostsService) UpdatePost(postId, text, bookTitle, userId string) error 
 	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
 	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
 
-	newBook, err := p.BookRepo.CreateOrGetBook("", bookTitle)
-	book := model.Book{Id: newBook}
+	err := p.BookRepo.UpdateBookTitle(bookTitle, bookId)
 
 	if err != nil {
 		return err
 	}
 
-	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow, Book: book}
-
-	err = p.BookRepo.AddBookToUser(userId, newBook)
-
-	if err != nil {
-		return err
-	}
-
+	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
 	user, err := client.GetPost(postId, userId)
 
 	if len(user.Posts) == 0 || err != nil {
@@ -234,7 +226,6 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		response = append(response, item)
 	}
 
-	fmt.Println(response)
 	////// sort according to date
 	sort.Slice(response, func(i, j int) bool {
 		return response[i].CreatedAt > response[j].CreatedAt

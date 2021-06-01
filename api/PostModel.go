@@ -36,6 +36,7 @@ type UpdatePostRequest struct {
 	Post      string `json:"post"`
 	PostId    string `json:"post_id"`
 	BookTitle string `json:"book_title"`
+	BookId    string `json:"book_id"`
 }
 
 type PostIdRequest struct {

@@ -101,17 +101,18 @@ func (repo BookRepo) CreateBook(bookName string) (string, error) {
 	return book[0].Id, nil
 }
 
-func (repo BookRepo) AddBookToUser(userId, bookId string) error {
+func (repo BookRepo) UpdateBookTitle(bookTitle, bookId string) error {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`mutation {
-			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {books: {id: "%s"}}}) {
-			  user {
-				userId
+			updateBook(input: {filter: {id: "%s"}, set: {name: "%s"}}){
+			  book{
+				id
 			  }
 			}
 		  }
-		  `, userId, bookId),
+		  
+		  `, bookId, bookTitle),
 	}
 
 	_, err := client.Do(query)

@@ -80,7 +80,7 @@ func (p *postHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var request api.UpdatePostRequest
 	json.Unmarshal(reqBody, &request)
 
-	err := p.PostsService.UpdatePost(request.PostId, request.Post, request.BookTitle, uid)
+	err := p.PostsService.UpdatePost(request.PostId, request.Post, request.BookTitle, request.BookId, uid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
