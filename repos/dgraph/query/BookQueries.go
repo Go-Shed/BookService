@@ -100,3 +100,24 @@ func (repo BookRepo) CreateBook(bookName string) (string, error) {
 
 	return book[0].Id, nil
 }
+
+func (repo BookRepo) AddBookToUser(userId, bookId string) error {
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {books: {id: "%s"}}}) {
+			  user {
+				userId
+			  }
+			}
+		  }
+		  `, userId, bookId),
+	}
+
+	_, err := client.Do(query)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}

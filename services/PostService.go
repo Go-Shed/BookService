@@ -64,7 +64,23 @@ func (p *PostsService) UpdatePost(postId, text, bookTitle, userId string) error 
 	timeNow := time.Now().Local().String()
 	text = strings.Replace(text, "\n", "\\n", -1)
 
-	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
+	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
+	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
+
+	newBook, err := p.BookRepo.CreateOrGetBook("", bookTitle)
+	book := model.Book{Id: newBook}
+
+	if err != nil {
+		return err
+	}
+
+	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow, Book: book}
+
+	err = p.BookRepo.AddBookToUser(userId, newBook)
+
+	if err != nil {
+		return err
+	}
 
 	user, err := client.GetPost(postId, userId)
 

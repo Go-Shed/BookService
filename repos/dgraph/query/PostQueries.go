@@ -222,13 +222,14 @@ func (repo PostRepo) UpdatePost(post model.Post) (model.Post, error) {
 
 	client := repo.client
 	query := dgraph.Request{
-		Query: fmt.Sprintf(`mutation{
-			updatePost(input: {filter: {id: "%s"}, set: {text: "%s", updatedAt: "%s"}}){
-			  post{
+		Query: fmt.Sprintf(`mutation {
+			updatePost(input: {filter: {id: "%s"}, set: {text: "%s", updatedAt: "%s", book: {id: "%s"}}}) {
+			  post {
 				id
 			  }
 			}
-		  }`, post.Id, post.Text, post.UpdatedAt), Operation: "updateUser"}
+		  }
+		  `, post.Id, post.Text, post.UpdatedAt, post.Book.Id), Operation: "updateUser"}
 
 	response, err := client.Do(query)
 
