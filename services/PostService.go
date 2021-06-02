@@ -184,8 +184,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 	if isSelf {
 		forUserId = userId
 	} else {
-		userId = forUserId
-		forUserId = userId
+		userId, forUserId = forUserId, userId
 	}
 	user, err := client.GetUserHomeProfileScreen(userId, forUserId)
 
