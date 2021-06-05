@@ -195,7 +195,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 	showEditButton, showLikeSection := false, true
 	if isSelf {
 		showEditButton = true
-		showLikeSection = false
+		showLikeSection = true
 	}
 	userFeedItem := api.GetPostResponse{
 		UserId:          userId,
