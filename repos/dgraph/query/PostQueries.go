@@ -342,6 +342,7 @@ func (repo PostRepo) GetLikesOnPost(postId, uid string) (model.Post, error) {
 			  likes {
 				userId
 				userName
+				userPhoto
 				followers(filter: {userId: {eq: "%s"}}){
 				  userId
 				}
