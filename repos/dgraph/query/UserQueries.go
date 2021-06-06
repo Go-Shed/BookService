@@ -167,7 +167,7 @@ func (repo UserRepo) SearchUser(userId, username string) []model.User {
 	return user
 }
 
-func (repo UserRepo) GetFollowers(userId string) (model.User, error) {
+func (repo UserRepo) GetFollowers(profileUserId, userId string) (model.User, error) {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -177,11 +177,13 @@ func (repo UserRepo) GetFollowers(userId string) (model.User, error) {
 				userId
 				userName
 				userPhoto
+				followers(filter: {userId: {eq: "%s"}}){
+					userId
+				  }
 			  }
 			}
 		  }
-		  
-		  `, userId)}
+		  `, profileUserId, userId)}
 
 	response, err := client.Do(query)
 
@@ -194,7 +196,7 @@ func (repo UserRepo) GetFollowers(userId string) (model.User, error) {
 	return user, nil
 }
 
-func (repo UserRepo) GetFollowing(userId string) (model.User, error) {
+func (repo UserRepo) GetFollowing(profileUserId, userId string) (model.User, error) {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -204,10 +206,13 @@ func (repo UserRepo) GetFollowing(userId string) (model.User, error) {
 				userId
 				userName
 				userPhoto
+				followers(filter: {userId: {eq: "%s"}}){
+					userId
+				  }
 			  }
 			}
 		  }
-		  `, userId)}
+		  `, profileUserId, userId)}
 
 	response, err := client.Do(query)
 

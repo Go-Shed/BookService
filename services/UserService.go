@@ -97,7 +97,7 @@ func (u *UserService) GetFollowers(userId, profileUserId string, isSelf bool) (a
 		profileUserId = userId
 	}
 
-	response, err := u.UserRepo.GetFollowers(profileUserId)
+	response, err := u.UserRepo.GetFollowers(profileUserId, userId)
 
 	if err != nil {
 		return api.GetFollowersResponse{}, fmt.Errorf("something went wrong")
@@ -112,9 +112,14 @@ func (u *UserService) GetFollowers(userId, profileUserId string, isSelf bool) (a
 	for _, item := range response.Followers {
 
 		followItem := api.FollowItem{
-			UserPhoto: item.UserPhoto,
-			UserName:  item.Username,
-			UserId:    item.UserId,
+			UserPhoto:  item.UserPhoto,
+			UserName:   item.Username,
+			UserId:     item.UserId,
+			IsFollowed: false,
+		}
+
+		if len(item.Followers) > 0 {
+			followItem.IsFollowed = true
 		}
 
 		follows = append(follows, followItem)
@@ -134,7 +139,7 @@ func (u *UserService) GetFollowing(userId, profileUserId string, isSelf bool) (a
 		profileUserId = userId
 	}
 
-	response, err := u.UserRepo.GetFollowing(profileUserId)
+	response, err := u.UserRepo.GetFollowing(profileUserId, userId)
 
 	if err != nil {
 		return api.GetFollowingResponse{}, fmt.Errorf("something went wrong")
@@ -149,9 +154,14 @@ func (u *UserService) GetFollowing(userId, profileUserId string, isSelf bool) (a
 	for _, item := range response.Following {
 
 		followItem := api.FollowItem{
-			UserPhoto: item.UserPhoto,
-			UserName:  item.Username,
-			UserId:    item.UserId,
+			UserPhoto:  item.UserPhoto,
+			UserName:   item.Username,
+			UserId:     item.UserId,
+			IsFollowed: false,
+		}
+
+		if len(item.Followers) > 0 {
+			followItem.IsFollowed = true
 		}
 
 		follows = append(follows, followItem)

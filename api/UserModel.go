@@ -45,7 +45,8 @@ type GetFollowingResponse struct {
 }
 
 type FollowItem struct {
-	UserPhoto string `json:"user_photo"`
-	UserName  string `json:"user_name"`
-	UserId    string `json:"user_id"`
+	UserPhoto  string `json:"user_photo"`
+	UserName   string `json:"user_name"`
+	UserId     string `json:"user_id"`
+	IsFollowed bool   `json:"is_followed"`
 }

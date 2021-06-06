@@ -150,7 +150,7 @@ func (u *userHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 
 	if len(response.Follows) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Noone here!"})
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "No one here!"})
 		return
 	}
 
