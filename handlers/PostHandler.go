@@ -129,6 +129,26 @@ func (p *postHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200}) ////write response to http writer
 }
 
+func (p *postHandler) GetLikes(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.PostIdRequest
+	json.Unmarshal(reqBody, &request)
+
+	response := p.PostsService.GetLikes(request.PostId, uid)
+
+	if len(response.Likes) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: "No likes here!"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
 func (p *postHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()

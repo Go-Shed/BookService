@@ -332,3 +332,32 @@ func (repo PostRepo) GetPost(postId, uid string) (model.User, error) {
 	mapstructure.Decode(response["getUser"], &user)
 	return user, nil
 }
+
+func (repo PostRepo) GetLikesOnPost(postId, uid string) (model.Post, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query MyQuery {
+			getPost(id: "%s") {
+			  likes {
+				userId
+				userName
+				followers(filter: {userId: {eq: "%s"}}){
+				  userId
+				}
+			  }
+			}
+		  }
+		  
+		  `, postId, uid)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	var post model.Post
+	mapstructure.Decode(response["getPost"], &post)
+	return post, nil
+}

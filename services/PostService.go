@@ -110,6 +110,37 @@ func (p *PostsService) UnlikePost(postId, userId string) error {
 	return nil
 }
 
+func (p *PostsService) GetLikes(postId, uid string) api.GetLikesResponse {
+	client := p.PostRepo
+
+	post, err := client.GetLikesOnPost(postId, uid)
+
+	if len(post.Likes) == 0 || err != nil {
+		fmt.Println(err)
+		return api.GetLikesResponse{Likes: []api.LikeItem{}, TotalLikes: 0}
+	}
+
+	var likesList []api.LikeItem
+
+	for _, item := range post.Likes {
+		likeItem := api.LikeItem{
+			UserPhoto:     item.UserPhoto,
+			UserName:      item.Username,
+			UserId:        item.UserId,
+			ShowFollowBtn: true,
+			IsFollowed:    false,
+		}
+
+		if len(item.Followers) != 0 {
+			likeItem.IsFollowed = true
+		}
+
+		likesList = append(likesList, likeItem)
+	}
+
+	return api.GetLikesResponse{Likes: likesList, TotalLikes: len(post.Likes)}
+}
+
 func (p *PostsService) DeletePost(postId, uid string) error {
 	client := p.PostRepo
 

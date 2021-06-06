@@ -166,3 +166,55 @@ func (repo UserRepo) SearchUser(userId, username string) []model.User {
 	mapstructure.Decode(response["queryUser"], &user)
 	return user
 }
+
+func (repo UserRepo) GetFollowers(userId string) model.User {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query MyQuery {
+			getUser(userId: "%s") {
+			  followers{
+				userId
+				userName
+			  }
+			}
+		  }
+		  
+		  `, userId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}
+	}
+
+	var user model.User
+	mapstructure.Decode(response["getUser"], &user)
+	return user
+}
+
+func (repo UserRepo) GetFollowing(userId string) model.User {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query MyQuery {
+			getUser(userId: "%s") {
+			  following{
+				userId
+				userName
+			  }
+			}
+		  }
+		  
+		  `, userId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.User{}
+	}
+
+	var user model.User
+	mapstructure.Decode(response["getUser"], &user)
+	return user
+}

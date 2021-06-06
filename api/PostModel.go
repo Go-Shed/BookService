@@ -42,3 +42,16 @@ type UpdatePostRequest struct {
 type PostIdRequest struct {
 	PostId string `json:"post_id"`
 }
+
+type GetLikesResponse struct {
+	Likes      []LikeItem `json:"likes"`
+	TotalLikes int        `json:"total_likes"`
+}
+
+type LikeItem struct {
+	UserPhoto     string `json:"user_photo"`
+	ShowFollowBtn bool   `json:"show_follow_button"`
+	IsFollowed    bool   `json:"is_followed"`
+	UserName      string `json:"user_name"`
+	UserId        string `json:"user_id"`
+}
