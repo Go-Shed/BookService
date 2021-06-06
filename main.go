@@ -37,6 +37,9 @@ func handleRequests() *mux.Router {
 	router.Handle("/fetchProfile", auth.AuthorizeUsers(http.HandlerFunc(userHandler.FetchProfile))).Methods("POST")
 	router.HandleFunc("/deletePost", postsHandler.DeletePost).Methods("POST")
 
+	router.Handle("/getFollowers", auth.AuthorizeUsers(http.HandlerFunc(userHandler.GetFollowers))).Methods("POST")
+	router.Handle("/getFollowing", auth.AuthorizeUsers(http.HandlerFunc(userHandler.GetFollowing))).Methods("POST")
+
 	return router
 }
 

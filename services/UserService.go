@@ -86,3 +86,77 @@ func (u *UserService) FetchProfile(userId, profileUserId string, isSelf bool) (a
 		IsFollowing: isFollowing,
 	}, nil
 }
+
+func (u *UserService) GetFollowers(userId, profileUserId string, isSelf bool) (api.GetFollowersResponse, error) {
+
+	if !isSelf && len(profileUserId) == 0 {
+		return api.GetFollowersResponse{}, fmt.Errorf("profleUser id must exist")
+	}
+
+	if isSelf {
+		profileUserId = userId
+	}
+
+	response, err := u.UserRepo.GetFollowers(profileUserId)
+
+	if err != nil {
+		return api.GetFollowersResponse{}, fmt.Errorf("something went wrong")
+	}
+
+	if len(response.Followers) == 0 {
+		return api.GetFollowersResponse{}, nil
+	}
+
+	var follows []api.FollowItem
+
+	for _, item := range response.Followers {
+
+		followItem := api.FollowItem{
+			UserPhoto: item.UserPhoto,
+			UserName:  item.Username,
+			UserId:    item.UserId,
+		}
+
+		follows = append(follows, followItem)
+
+	}
+
+	return api.GetFollowersResponse{Follows: follows, TotalFollowers: len(follows)}, nil
+}
+
+func (u *UserService) GetFollowing(userId, profileUserId string, isSelf bool) (api.GetFollowingResponse, error) {
+
+	if !isSelf && len(profileUserId) == 0 {
+		return api.GetFollowingResponse{}, fmt.Errorf("profleUser id must exist")
+	}
+
+	if isSelf {
+		profileUserId = userId
+	}
+
+	response, err := u.UserRepo.GetFollowing(profileUserId)
+
+	if err != nil {
+		return api.GetFollowingResponse{}, fmt.Errorf("something went wrong")
+	}
+
+	if len(response.Following) == 0 {
+		return api.GetFollowingResponse{}, nil
+	}
+
+	var follows []api.FollowItem
+
+	for _, item := range response.Following {
+
+		followItem := api.FollowItem{
+			UserPhoto: item.UserPhoto,
+			UserName:  item.Username,
+			UserId:    item.UserId,
+		}
+
+		follows = append(follows, followItem)
+
+	}
+
+	return api.GetFollowingResponse{Follows: follows, TotalFollowing: len(follows)}, nil
+}

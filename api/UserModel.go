@@ -33,3 +33,19 @@ type FetchProfileRequest struct {
 	IsSelf        bool   `json:"is_self"`
 	ProfileUserId string `json:"profile_user_id,omitempty"`
 }
+
+type GetFollowersResponse struct {
+	Follows        []FollowItem `json:"follows"`
+	TotalFollowers int          `json:"total_followers"`
+}
+
+type GetFollowingResponse struct {
+	Follows        []FollowItem `json:"follows"`
+	TotalFollowing int          `json:"total_following"`
+}
+
+type FollowItem struct {
+	UserPhoto string `json:"user_photo"`
+	UserName  string `json:"user_name"`
+	UserId    string `json:"user_id"`
+}

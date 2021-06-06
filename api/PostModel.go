@@ -50,7 +50,7 @@ type GetLikesResponse struct {
 
 type LikeItem struct {
 	UserPhoto     string `json:"user_photo"`
-	ShowFollowBtn bool   `json:"show_follow_button"`
+	ShowFollowBtn bool   `json:"show_follow_btn"`
 	IsFollowed    bool   `json:"is_followed"`
 	UserName      string `json:"user_name"`
 	UserId        string `json:"user_id"`

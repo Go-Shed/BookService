@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shed/bookservice/api"
@@ -97,6 +98,59 @@ func (u *userHandler) FetchProfile(w http.ResponseWriter, r *http.Request) {
 	if len(response.UserName) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "You are lost, this profile does not exist!"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func (u *userHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.FetchProfileRequest
+	json.Unmarshal(reqBody, &request)
+
+	response, err := u.UserService.GetFollowers(uid, request.ProfileUserId, request.IsSelf)
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Something went wrong. Please try again!"})
+		return
+	}
+
+	if len(response.Follows) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "No followers here!"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func (u *userHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.FetchProfileRequest
+	json.Unmarshal(reqBody, &request)
+
+	response, err := u.UserService.GetFollowing(uid, request.ProfileUserId, request.IsSelf)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Something went wrong. Please try again!"})
+		return
+	}
+
+	if len(response.Follows) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Noone here!"})
 		return
 	}
 
