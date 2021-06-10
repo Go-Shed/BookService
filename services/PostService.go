@@ -62,11 +62,11 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 
 func (p *PostsService) UpdatePost(postId, text, bookTitle, bookId, userId string) error {
 
-	log.Print(text, postId)
-
 	client := p.PostRepo
 	timeNow := time.Now().Local().String()
 	text = strings.Replace(text, "\n", "\\n", -1)
+
+	log.Print(text, postId)
 
 	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
 	user, err := client.GetPost(postId, userId)
