@@ -36,7 +36,7 @@ func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
 	client := p.PostRepo
 	timeNow := time.Now().Local().String()
 
-	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
+	bookTitle = strings.TrimSpace(bookTitle)
 	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
 	text = strings.Replace(text, "\n", "\\n", -1)
 
@@ -64,14 +64,14 @@ func (p *PostsService) UpdatePost(postId, text, bookTitle, bookId, userId string
 	timeNow := time.Now().Local().String()
 	text = strings.Replace(text, "\n", "\\n", -1)
 
-	bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
-	bookTitle = strings.Join(strings.Fields(bookTitle), " ")
+	// bookTitle = strings.TrimSpace(strings.ToLower(bookTitle))
+	// bookTitle = strings.Join(strings.Fields(bookTitle), " ")
 
-	err := p.BookRepo.UpdateBookTitle(bookTitle, bookId)
+	// err := p.BookRepo.UpdateBookTitle(bookTitle, bookId)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
 	post := model.Post{Id: postId, Text: text, UpdatedAt: timeNow}
 	user, err := client.GetPost(postId, userId)
@@ -313,9 +313,13 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 }
 
 func toUpperCase(s string) string {
-	c := strings.ToUpper(string(s[0]))
-	res := s[1:]
-	res = c + res
 
-	return res
+	if time.Now().Unix() < 1623348306 {
+		c := strings.ToUpper(string(s[0]))
+		res := s[1:]
+		res = c + res
+		return res
+	}
+
+	return s
 }
