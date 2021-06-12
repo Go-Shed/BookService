@@ -50,3 +50,7 @@ type FollowItem struct {
 	UserId     string `json:"user_id"`
 	IsFollowed bool   `json:"is_followed"`
 }
+
+type UpdateUser struct {
+	UserName string `json:"user_name"`
+}

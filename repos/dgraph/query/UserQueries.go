@@ -224,3 +224,23 @@ func (repo UserRepo) GetFollowing(profileUserId, userId string) (model.User, err
 	mapstructure.Decode(response["getUser"], &user)
 	return user, nil
 }
+
+func (repo UserRepo) UpdateUserName(user, userName string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {userName: "%s"}}) {
+			  user {
+				userId
+			  }
+			}
+		  }
+		  `, user, userName), Operation: "updateUser"}
+
+	_, err := client.Do(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}

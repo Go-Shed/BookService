@@ -2,8 +2,10 @@ package services
 
 import (
 	"fmt"
+	"regexp"
 	"shed/bookservice/api"
 	"shed/bookservice/repos/dgraph/query"
+	"strings"
 )
 
 type UserService struct {
@@ -17,6 +19,21 @@ func NewUserService() UserService {
 func (u *UserService) FollowUser(userId, userIdToFollow string) error {
 	err := u.UserRepo.FollowUser(userId, userIdToFollow)
 	return err
+}
+
+//// bool to send that message from error can be used as front end messages
+//// Will remove in future with generic errors
+func (u *UserService) UpdateUserName(userId, username string) (bool, error) {
+
+	username = strings.TrimSpace(username)
+	var validName = regexp.MustCompile(`^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$`)
+
+	if !validName.MatchString(username) {
+		return true, fmt.Errorf("invalid username")
+	}
+
+	err := u.UserRepo.UpdateUserName(userId, username)
+	return false, err
 }
 
 func (u *UserService) UnfollowUser(userId, userIdToUnFollow string) error {

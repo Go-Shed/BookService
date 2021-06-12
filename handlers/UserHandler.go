@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"shed/bookservice/api"
 	auth "shed/bookservice/handlers/Auth"
@@ -36,6 +37,31 @@ func (u *userHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200})
+}
+
+func (u *userHandler) UpdateUserName(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.UpdateUser
+	json.Unmarshal(reqBody, &request)
+
+	showMessage, err := u.UserService.UpdateUserName(uid, request.UserName)
+
+	if err != nil {
+		log.Print(err)
+		message := "Some error occurred, please try again"
+		if showMessage {
+			message = err.Error()
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 500, Message: message})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Cool name!😎"})
 }
 
 func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
