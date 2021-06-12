@@ -29,7 +29,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	if len(request.Email) == 0 || len(request.Username) == 0 || len(uid) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 400, Message: "Username, email or userId can not be empty"})
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 400, Message: "Username, email and userId can not be empty"})
 		return
 	}
 

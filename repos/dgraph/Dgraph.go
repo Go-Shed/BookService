@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -26,10 +27,17 @@ type DgraphResponse struct {
 type Dgraph struct {
 }
 
-const URL = "https://patient-resonance.ap-south-1.aws.cloud.dgraph.io/graphql"
-const secret = "MTMyYWIwY2E3YTc0ODQ3MTJkNWRjMDkxYzA4MWJmN2U="
-
 func (dgraph *Dgraph) Do(query Request) (map[string]interface{}, error) {
+
+	var URL, secret string
+
+	if os.Getenv("GO_ENV") == "prod" {
+		URL = "https://patient-resonance.ap-south-1.aws.cloud.dgraph.io/graphql"
+		secret = "MTMyYWIwY2E3YTc0ODQ3MTJkNWRjMDkxYzA4MWJmN2U="
+	} else {
+		URL = "https://hidden-sunset.ap-south-1.aws.cloud.dgraph.io/graphql"
+		secret = "OGJiYjRiNjExMWY1MGZmOWQwYWQxZmRhNzdmZGZjODM="
+	}
 
 	jsonValue, _ := json.Marshal(query)
 	request, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonValue))
