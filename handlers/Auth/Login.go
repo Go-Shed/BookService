@@ -16,7 +16,7 @@ type AddUserRequest struct {
 
 type AddUserResponse struct {
 	UserId            string `json:"user_id"`
-	AlreadyRegistered bool   `json:"alreadyRegistered"`
+	AlreadyRegistered bool   `json:"already_registered"`
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
