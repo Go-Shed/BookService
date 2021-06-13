@@ -34,6 +34,7 @@ func handleRequests() *mux.Router {
 	router.Handle("/like", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.LikePost))).Methods("POST")
 	router.Handle("/unlike", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.UnlikePost))).Methods("POST")
 	router.Handle("/getLikes", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.GetLikes))).Methods("POST")
+	router.Handle("/getComments", auth.AuthorizeUsers(http.HandlerFunc(commentHandler.GetComments))).Methods("POST")
 
 	router.Handle("/searchUser", auth.AuthorizeUsers(http.HandlerFunc(userHandler.SearchUser))).Methods("POST")
 	router.Handle("/getBooks", auth.AuthorizeUsers(http.HandlerFunc(bookHandler.GetBooks))).Methods("POST")

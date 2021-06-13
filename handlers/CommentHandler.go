@@ -38,3 +38,24 @@ func (p *commentHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Done😃"})
 }
+
+func (p *commentHandler) GetComments(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.GetCommentsRequest
+	json.Unmarshal(reqBody, &request)
+
+	comments, err := p.CommentService.GetComments(request.PostId, uid)
+
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 500, Message: "Some error occurred, please try again"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(comments)
+}
