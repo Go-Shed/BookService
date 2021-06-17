@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"shed/bookservice/api"
+	"shed/bookservice/common"
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
 	"strings"
@@ -62,7 +63,7 @@ func (p *CommentService) GetComments(postId, userId string) (api.GetCommentsResp
 			UserName:  comment.User.Username,
 			UserId:    comment.User.UserId,
 			UserPhoto: comment.User.UserPhoto,
-			CreatedAt: comment.CreatedAt,
+			CreatedAt: common.GetFormattedDate(comment.CreatedAt),
 			CommentId: comment.Id,
 		}
 

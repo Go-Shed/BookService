@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"shed/bookservice/api"
+	"shed/bookservice/common"
 	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
@@ -182,7 +183,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 			item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
-			item.CreatedAt = fmt.Sprint(post.CreatedAt)
+			item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 			item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
 
 			if len(post.Likes) > 0 {
@@ -240,7 +241,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
-		item.CreatedAt = fmt.Sprint(post.CreatedAt)
+		item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 		item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
 
 		if len(post.Likes) > 0 {
@@ -286,7 +287,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			Text:            strings.Replace(post.Text, "\\n", "\n", -1),
 			PostId:          post.Id,
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
-			CreatedAt:       fmt.Sprint(post.CreatedAt),
+			CreatedAt:       common.GetFormattedDate(post.CreatedAt),
 			Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
 		}
 

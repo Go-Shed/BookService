@@ -38,7 +38,7 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(response.Posts) == 0 {
-		msg := getMessageToShownOnScreen(request.ScreenName)
+		msg := getMessageToShownOnScreen(request.ScreenName, request.IsSelf)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 400, Message: msg})
 		return
@@ -169,15 +169,17 @@ func (p *postHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Post deleted successfully"}) ////write response to http writer
 }
 
-func getMessageToShownOnScreen(screen string) string {
+func getMessageToShownOnScreen(screen string, IsSelf bool) string {
 	var msg string
 
 	if screen == constants.SCREEN_HOME {
 		msg = "No Posts here, why not follow someone!"
 	} else if screen == constants.SCREEN_EXPLORE {
 		msg = "Couldn't find posts for you, try again later!"
+	} else if IsSelf {
+		msg = "It may have escaped your notice, but people are waiting for you to share"
 	} else {
-		msg = "Ah, looks like someone's been unsocial lately. Post about your favourite books and find others like you ! :) "
+		msg = "No posts here, come again later"
 	}
 	return msg
 }
