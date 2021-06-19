@@ -53,24 +53,25 @@ func (repo PostRepo) GetUserFeedHomeScreen(userId string) (model.User, error) {
 				userId
 				userName
 				userPhoto
-				posts {
+				posts(order: {desc: createdAt}) {
 				  id
 				  text
 				  createdAt
 				  likes(filter: {userId: {eq: "%s"}}) {
 					userId
 				  }
-				  likesAggregate{
-					  count
+				  likesAggregate {
+					count
 				  }
-				  book{
+				  book {
 					name
 					id
-				}
+				  }
 				}
 			  }
 			}
-		}`, userId, userId)}
+		  }
+		  `, userId, userId)}
 
 	response, err := client.Do(query)
 
@@ -88,28 +89,29 @@ func (repo PostRepo) GetUserHomeProfileScreen(userId, forUserId string) (model.U
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`query MyQuery {
 			getUser(userId: "%s") {
-				userName
-				userPhoto
-				followers(filter: {userId: {eq: "%s"}}){
-					userId
-				  }
-    		posts {
-				  id
-				  text
-				  createdAt
-				  likes(filter: {userId: {eq: "%s"}}) {
-					userId
-				  }
-				  likesAggregate{
-					  count
-				  }
-				  book{
-					name
-					id
+			  userName
+			  userPhoto
+			  followers(filter: {userId: {eq: "%s"}}) {
+				userId
+			  }
+			  posts(order: {desc: createdAt}) {
+				id
+				text
+				createdAt
+				likes(filter: {userId: {eq: "%s"}}) {
+				  userId
 				}
-        }
+				likesAggregate {
+				  count
+				}
+				book {
+				  name
+				  id
+				}
+			  }
 			}
-}`, forUserId, userId, userId)}
+		  }
+		  `, forUserId, userId, userId)}
 
 	response, err := client.Do(query)
 
@@ -126,14 +128,14 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 	client := repo.client
 	query := dgraph.Request{
 		Query: fmt.Sprintf(`{
-			queryPost {
+			queryPost(order: {desc: createdAt}) {
 			  id
 			  createdAt
 			  author {
 				userId
 				userPhoto
 				userName
-				followers(filter: {userId: {eq: "%s"}}){
+				followers(filter: {userId: {eq: "%s"}}) {
 				  userId
 				}
 			  }
@@ -144,10 +146,10 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 			  likes(filter: {userId: {eq: "%s"}}) {
 				userId
 			  }
-			  book{
+			  book {
 				name
 				id
-				}
+			  }
 			}
 		  }
 		  `, userId, userId),
