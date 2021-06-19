@@ -2,11 +2,13 @@ package scripts
 
 import (
 	"encoding/csv"
+	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 )
 
-func CleanData(in, out string) error {
+func CleanData(in string) error {
 
 	f, err := os.Open(in)
 	if err != nil {
@@ -15,6 +17,9 @@ func CleanData(in, out string) error {
 	defer f.Close()
 
 	csvr := csv.NewReader(f)
+	csvr.Comma = '\t'
+	csvr.FieldsPerRecord = -1
+	csvr.LazyQuotes = true
 
 	for {
 		row, err := csvr.Read()
@@ -25,12 +30,11 @@ func CleanData(in, out string) error {
 			return err
 		}
 
-		item := UpdateWithdrawlRequest{WithdrawalRequestId: row[0]}
-		response = append(response, item)
+		var item BookOpenLib
+		json.Unmarshal([]byte(row[4]), &item)
+
+		result, _ := json.Marshal(item)
+
+		fmt.Println(string(result))
 	}
-
-}
-
-func (service *WithdrawlService) csvTOList(filename string) ([]UpdateWithdrawlRequest, error) {
-
 }
