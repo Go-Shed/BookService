@@ -14,12 +14,13 @@ import (
 )
 
 type PostsService struct {
-	PostRepo query.PostRepo
-	BookRepo query.BookRepo
+	PostRepo    query.PostRepo
+	BookRepo    query.BookRepo
+	CommentRepo query.CommentRepo
 }
 
 func NewPostsService() PostsService {
-	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo()}
+	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo(), CommentRepo: query.NewCommentRepo()}
 }
 
 func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf bool) (api.GetPostsResponse, error) {
@@ -184,6 +185,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 			item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
+			item.TopComment = p.getTopComment(post.Id, userId)
 
 			if len(post.Likes) > 0 {
 				item.IsLiked = true
@@ -238,6 +240,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 		item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
+		item.TopComment = p.getTopComment(post.Id, forUserId)
 
 		if len(post.Likes) > 0 {
 			item.IsLiked = true
@@ -279,6 +282,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       common.GetFormattedDate(post.CreatedAt),
 			Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
+			TopComment:      p.getTopComment(post.Id, userId), ////// wiil optimize later to fetch this parallely
 		}
 
 		if len(post.Likes) > 0 {
@@ -303,4 +307,46 @@ func toUpperCase(s string) string {
 	}
 
 	return s
+}
+
+/// Currently getting all comments
+/// In future will write separate repo function for it
+func (p PostsService) getTopComment(postId, userId string) api.CommentItem {
+
+	if len(postId) == 0 || len(userId) == 0 {
+		return api.CommentItem{}
+	}
+
+	comments, err := p.CommentRepo.GetComments(postId)
+
+	if err != nil || len(comments) == 0 {
+		return api.CommentItem{}
+	}
+
+	recentComment := comments[0]
+	response := api.CommentItem{
+		Text:      recentComment.Text,
+		UserName:  recentComment.User.Username,
+		UserId:    recentComment.User.UserId,
+		UserPhoto: recentComment.User.UserPhoto,
+		CreatedAt: common.GetFormattedDate(recentComment.CreatedAt),
+		CommentId: recentComment.Id,
+	}
+
+	for _, comment := range comments {
+
+		if comment.User.UserId == userId {
+			response = api.CommentItem{
+				Text:      comment.Text,
+				UserName:  comment.User.Username,
+				UserId:    comment.User.UserId,
+				UserPhoto: comment.User.UserPhoto,
+				CreatedAt: common.GetFormattedDate(comment.CreatedAt),
+				CommentId: comment.Id,
+			}
+			break
+		}
+	}
+
+	return response
 }

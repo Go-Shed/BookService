@@ -24,6 +24,7 @@ type GetPostResponse struct {
 	PostId          string       `json:"post_id"`
 	CreatedAt       string       `json:"created_at"`
 	Book            BookResponse `json:"book"`
+	TopComment      CommentItem  `json:"top_comment"`
 }
 
 type AddPostRequest struct {
