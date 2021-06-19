@@ -9,7 +9,6 @@ import (
 	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
-	"sort"
 	"strings"
 	"time"
 )
@@ -193,10 +192,6 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 		}
 	}
 
-	////// sort according to date
-	sort.Slice(response, func(i, j int) bool {
-		return response[i].CreatedAt > response[j].CreatedAt
-	})
 	return api.GetPostsResponse{Posts: response}, nil
 }
 
@@ -250,11 +245,6 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 		response = append(response, item)
 	}
 
-	////// sort according to date
-	sort.Slice(response, func(i, j int) bool {
-		return response[i].CreatedAt > response[j].CreatedAt
-	})
-
 	return api.GetPostsResponse{Posts: response}, nil
 }
 
@@ -299,11 +289,6 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 		}
 		response = append(response, postItem)
 	}
-
-	////// sort according to likes
-	sort.Slice(response, func(i, j int) bool {
-		return response[i].CreatedAt > response[j].CreatedAt
-	})
 
 	return api.GetPostsResponse{Posts: response}, nil
 }
