@@ -53,8 +53,7 @@ func (p *CommentService) GetComments(postId, userId string) (api.GetCommentsResp
 		return api.GetCommentsResponse{}, err
 	}
 
-	var otherComments []api.CommentItem
-	var myComments []api.CommentItem
+	var response []api.CommentItem
 
 	for _, comment := range comments {
 
@@ -67,15 +66,8 @@ func (p *CommentService) GetComments(postId, userId string) (api.GetCommentsResp
 			CommentId: comment.Id,
 		}
 
-		if item.UserId == userId {
-			myComments = append(myComments, item)
-			continue
-		}
-
-		otherComments = append(otherComments, item)
+		response = append(response, item)
 	}
-
-	response := append(myComments, otherComments...)
 
 	return api.GetCommentsResponse{Comments: response}, nil
 }

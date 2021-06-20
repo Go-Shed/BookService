@@ -333,20 +333,5 @@ func (p PostsService) getTopComment(postId, userId string) api.CommentItem {
 		CommentId: recentComment.Id,
 	}
 
-	for _, comment := range comments {
-
-		if comment.User.UserId == userId {
-			response = api.CommentItem{
-				Text:      comment.Text,
-				UserName:  comment.User.Username,
-				UserId:    comment.User.UserId,
-				UserPhoto: comment.User.UserPhoto,
-				CreatedAt: common.GetFormattedDate(comment.CreatedAt),
-				CommentId: comment.Id,
-			}
-			break
-		}
-	}
-
 	return response
 }
