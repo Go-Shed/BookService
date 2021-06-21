@@ -51,6 +51,7 @@ type Aggregate struct {
 /**
 Dgraph schema:
 
+V1
 type User {
   userId: String! @id
   userName: String! @search(by: [exact, trigram])
@@ -63,23 +64,71 @@ type User {
   books:[Book!] @hasInverse(field:users)
 }
 
+
+
 type Post {
   id: ID!
   text: String!
   author: User!
-  color: String
   createdAt: DateTime!
   updatedAt: DateTime!
-  totalLikes: Int64
   likes: [User!]
   book: Book! @hasInverse(field:posts)
+  isDeleted: Boolean!
 }
 
 type Book{
-  id: String! @id
+ 	id: ID!
 	name: String! @search(by: [exact])
 	posts: [Post!]
 	users: [User!]
   }
 
+
+
+ V2
+
+
+ type User {
+  userId: String! @id
+  userName: String! @search(by: [exact, trigram])
+  userPhoto: String
+  email: String
+  followers: [User!]
+  following: [User!] @hasInverse(field:followers)
+  posts: [Post!] @hasInverse(field:author)
+  likes: [Post!] @hasInverse(field:likes)
+  books:[Book!] @hasInverse(field:users)
+  comments: [Comment!] @hasInverse(field:user)
+}
+
+
+
+type Post {
+  id: ID!
+  text: String!
+  author: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  likes: [User!]
+  book: Book! @hasInverse(field:posts)
+  isDeleted: Boolean!
+  comments: [Comment!] @hasInverse(field:post)
+}
+
+type Book{
+  id: ID!
+	name: String! @search(by: [exact])
+	posts: [Post!]
+	users: [User!]
+  }
+
+type Comment {
+  id: ID!
+  text: String!
+  post: Post!
+  user: User!
+	createdAt: DateTime!
+  updatedAt: DateTime!
+}
 **/
