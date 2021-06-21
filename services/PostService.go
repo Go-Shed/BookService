@@ -282,7 +282,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       common.GetFormattedDate(post.CreatedAt),
 			Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
-			TopComment:      p.getTopComment(post.Id, userId), ////// wiil optimize later to fetch this parallely
+			// TopComment:      p.getTopComment(post.Id, userId), ////// wiil optimize later to fetch this parallely
 		}
 
 		if len(post.Likes) > 0 {
