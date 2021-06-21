@@ -82,3 +82,48 @@ func (repo CommentRepo) GetComments(postId string) ([]model.Comment, error) {
 
 	return posts[0].Comments, nil
 }
+
+func (repo CommentRepo) GetTopCommentBulk(postIds []string) ([]model.Comment, error) {
+
+	client := repo.client
+
+	query := dgraph.Request{
+		Query: `query GetComments($patch: [ID!]) {
+			queryPost(filter: {id: $patch}) {
+			  id
+			  text
+			  comments(order: {desc: createdAt}, first: 1) {
+				id
+				text
+				createdAt
+				user {
+				  userId
+				  userName
+				  userPhoto
+				}
+			  }
+			}
+		  }`, Variables: dgraph.Variables{Patch: postIds},
+	}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return []model.Comment{}, err
+	}
+
+	var posts []model.Post
+	mapstructure.Decode(response["queryPost"], &posts)
+
+	var result []model.Comment
+
+	for _, post := range posts {
+		if len(post.Comments) > 0 {
+			result = append(result, post.Comments[0])
+		} else {
+			result = append(result, model.Comment{})
+		}
+	}
+
+	return result, nil
+}

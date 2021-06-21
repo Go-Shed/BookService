@@ -164,6 +164,7 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 	}
 
 	var response []api.GetPostResponse
+	var postIds []string
 
 	for _, following := range user.Following {
 
@@ -180,18 +181,24 @@ func (p *PostsService) getHomeScreen(userId string) (api.GetPostsResponse, error
 
 		for _, post := range following.Posts {
 			item := userFeedItem
+			postIds = append(postIds, post.Id)
 			item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 			item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 			item.PostId = fmt.Sprint(post.Id)
 			item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 			item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
-			item.TopComment = p.getTopComment(post.Id, userId)
 
 			if len(post.Likes) > 0 {
 				item.IsLiked = true
 			}
 			response = append(response, item)
 		}
+	}
+
+	////// parallel in the future
+	topComments := p.getTopComment(postIds)
+	for i, comment := range topComments {
+		response[i].TopComment = comment
 	}
 
 	return api.GetPostsResponse{Posts: response}, nil
@@ -215,6 +222,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 	}
 
 	var response []api.GetPostResponse
+	var postIds []string
 
 	showEditButton, showLikeSection := false, true
 	if isSelf {
@@ -234,18 +242,24 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 
 	for _, post := range user.Posts {
 
+		postIds = append(postIds, post.Id)
 		item := userFeedItem
 		item.Text = strings.Replace(post.Text, "\\n", "\n", -1)
 		item.LikeCount = fmt.Sprint(post.LikesAggregate.Count)
 		item.PostId = fmt.Sprint(post.Id)
 		item.CreatedAt = common.GetFormattedDate(post.CreatedAt)
 		item.Book = api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)}
-		item.TopComment = p.getTopComment(post.Id, forUserId)
 
 		if len(post.Likes) > 0 {
 			item.IsLiked = true
 		}
 		response = append(response, item)
+	}
+
+	////// parallel in the future
+	topComments := p.getTopComment(postIds)
+	for i, comment := range topComments {
+		response[i].TopComment = comment
 	}
 
 	return api.GetPostsResponse{Posts: response}, nil
@@ -261,6 +275,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 	}
 
 	var response []api.GetPostResponse
+	var postIds []string
 
 	for _, post := range posts {
 
@@ -268,6 +283,7 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			continue
 		}
 
+		postIds = append(postIds, post.Id)
 		postItem := api.GetPostResponse{
 			UserId:          post.Author.UserId,
 			UserName:        post.Author.Username,
@@ -282,7 +298,6 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
 			CreatedAt:       common.GetFormattedDate(post.CreatedAt),
 			Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
-			// TopComment:      p.getTopComment(post.Id, userId), ////// wiil optimize later to fetch this parallely
 		}
 
 		if len(post.Likes) > 0 {
@@ -292,6 +307,12 @@ func (p *PostsService) getExploreScreen(userId string) (api.GetPostsResponse, er
 			postItem.IsFollowed = true
 		}
 		response = append(response, postItem)
+	}
+
+	////// parallel in the future
+	topComments := p.getTopComment(postIds)
+	for i, comment := range topComments {
+		response[i].TopComment = comment
 	}
 
 	return api.GetPostsResponse{Posts: response}, nil
@@ -311,26 +332,32 @@ func toUpperCase(s string) string {
 
 /// Currently getting all comments
 /// In future will write separate repo function for it
-func (p PostsService) getTopComment(postId, userId string) api.CommentItem {
+func (p PostsService) getTopComment(posts []string) []api.CommentItem {
 
-	if len(postId) == 0 || len(userId) == 0 {
-		return api.CommentItem{}
+	if len(posts) == 0 {
+		return []api.CommentItem{}
 	}
 
-	comments, err := p.CommentRepo.GetComments(postId)
+	comments, err := p.CommentRepo.GetTopCommentBulk(posts)
 
 	if err != nil || len(comments) == 0 {
-		return api.CommentItem{}
+		return []api.CommentItem{}
 	}
 
-	recentComment := comments[0]
-	response := api.CommentItem{
-		Text:      recentComment.Text,
-		UserName:  recentComment.User.Username,
-		UserId:    recentComment.User.UserId,
-		UserPhoto: recentComment.User.UserPhoto,
-		CreatedAt: common.GetFormattedDate(recentComment.CreatedAt),
-		CommentId: recentComment.Id,
+	var response []api.CommentItem
+
+	for _, comment := range comments {
+
+		item := api.CommentItem{
+			Text:      comment.Text,
+			UserName:  comment.User.Username,
+			UserId:    comment.User.UserId,
+			UserPhoto: comment.User.UserPhoto,
+			CreatedAt: common.GetFormattedDate(comment.CreatedAt),
+			CommentId: comment.Id,
+		}
+
+		response = append(response, item)
 	}
 
 	return response

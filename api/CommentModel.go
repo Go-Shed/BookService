@@ -14,10 +14,10 @@ type GetCommentsResponse struct {
 }
 
 type CommentItem struct {
-	Text      string `json:"text"`
-	UserName  string `json:"user_name"`
-	UserId    string `json:"user_id"`
-	UserPhoto string `json:"user_photo"`
-	CreatedAt string `json:"created_at"`
-	CommentId string `json:"comment_id"`
+	Text      string `json:"text,omitempty"`
+	UserName  string `json:"user_name,omitempty"`
+	UserId    string `json:"user_id,omitempty"`
+	UserPhoto string `json:"user_photo,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	CommentId string `json:"comment_id,omitempty"`
 }
