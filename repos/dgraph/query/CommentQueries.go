@@ -101,6 +101,9 @@ func (repo CommentRepo) GetTopCommentBulk(postIds []string) ([]model.Comment, er
 				  userName
 				  userPhoto
 				}
+				post{
+				  id
+				}
 			  }
 			}
 		  }`, Variables: dgraph.Variables{Patch: postIds},

@@ -258,6 +258,7 @@ func (p *PostsService) getProfileScreen(userId, forUserId string, isSelf bool) (
 
 	////// parallel in the future
 	topComments := p.getTopComment(postIds)
+
 	for i, comment := range topComments {
 		response[i].TopComment = comment
 	}
@@ -340,13 +341,20 @@ func (p PostsService) getTopComment(posts []string) []api.CommentItem {
 
 	comments, err := p.CommentRepo.GetTopCommentBulk(posts)
 
+	m := make(map[string]model.Comment)
+	for _, item := range comments {
+		m[item.Post.Id] = item
+	}
+
 	if err != nil || len(comments) == 0 {
 		return []api.CommentItem{}
 	}
 
 	var response []api.CommentItem
 
-	for _, comment := range comments {
+	for _, post := range posts {
+
+		comment := m[post]
 
 		item := api.CommentItem{
 			Text:      comment.Text,
@@ -359,6 +367,5 @@ func (p PostsService) getTopComment(posts []string) []api.CommentItem {
 
 		response = append(response, item)
 	}
-
 	return response
 }
