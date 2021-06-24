@@ -13,6 +13,7 @@ type User struct {
 	FollowersAggregate Aggregate `json:"-"`
 	FollowingAggregate Aggregate `json:"-"`
 	Comments           []Comment `json:"comments,omitempty"`
+	FCMToken           string    `json:"fcmToken,omitempty"`
 }
 
 type Post struct {

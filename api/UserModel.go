@@ -54,3 +54,7 @@ type FollowItem struct {
 type UpdateUser struct {
 	UserName string `json:"user_name"`
 }
+
+type UpdateFCMToken struct {
+	Token string `json:"token"`
+}
