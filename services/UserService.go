@@ -36,6 +36,18 @@ func (u *UserService) UpdateUserName(userId, username string) (bool, error) {
 	return false, err
 }
 
+func (u *UserService) UpdateUserToken(userId, token string) (bool, error) {
+
+	if len(userId) == 0 {
+		return false, fmt.Errorf("user id must exist")
+	}
+
+	token = strings.TrimSpace(token)
+
+	err := u.UserRepo.UpdateFCMToken(userId, token)
+	return false, err
+}
+
 func (u *UserService) UnfollowUser(userId, userIdToUnFollow string) error {
 	err := u.UserRepo.UnFollowUser(userId, userIdToUnFollow)
 	return err

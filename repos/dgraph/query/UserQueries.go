@@ -244,3 +244,23 @@ func (repo UserRepo) UpdateUserName(user, userName string) error {
 	}
 	return nil
 }
+
+func (repo UserRepo) UpdateFCMToken(user, fcmToken string) error {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`mutation {
+			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {fcmToken: "%s"}}) {
+			  user {
+				userId
+			  }
+			}
+		  }
+		  `, user, fcmToken), Operation: "updateUser"}
+
+	_, err := client.Do(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}

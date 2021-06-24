@@ -28,6 +28,7 @@ func handleRequests() *mux.Router {
 	router.Handle("/updatePost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.UpdatePost))).Methods("POST")
 	router.Handle("/updateUser", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UpdateUserName))).Methods("POST")
 	router.Handle("/addComment", auth.AuthorizeUsers(http.HandlerFunc(commentHandler.AddComment))).Methods("POST")
+	router.Handle("/updateFCMToken", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UpdateUserToken))).Methods("POST")
 
 	router.Handle("/follow", auth.AuthorizeUsers(http.HandlerFunc(userHandler.FollowUser))).Methods("POST")
 	router.Handle("/unfollow", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UnfollowUser))).Methods("POST")

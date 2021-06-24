@@ -64,6 +64,28 @@ func (u *userHandler) UpdateUserName(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Cool name!😎"})
 }
 
+func (u *userHandler) UpdateUserToken(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.UpdateFCMToken
+	json.Unmarshal(reqBody, &request)
+
+	_, err := u.UserService.UpdateUserToken(uid, request.Token)
+
+	if err != nil {
+		log.Print(err)
+		message := "Some error occurred, please try again"
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ErrorResponse{HTTPCode: 500, Message: message})
+		return
+	}
+
+	json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 200, Message: "Successful"})
+}
+
 func (u *userHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
