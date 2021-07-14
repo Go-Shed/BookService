@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"shed/bookservice/handlers"
 	auth "shed/bookservice/handlers/Auth"
-	"time"
+	"shed/bookservice/scripts"
 
 	"github.com/gorilla/mux"
 )
@@ -49,15 +47,17 @@ func handleRequests() *mux.Router {
 
 func main() {
 
-	router := handleRequests()
+	// router := handleRequests()
 
-	fmt.Println("Starting server")
-	srv := &http.Server{
-		Handler:      router,
-		Addr:         ":8080",
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
-	}
+	// fmt.Println("Starting server")
+	// srv := &http.Server{
+	// 	Handler:      router,
+	// 	Addr:         ":8080",
+	// 	WriteTimeout: 5 * time.Second,
+	// 	ReadTimeout:  5 * time.Second,
+	// }
 
-	log.Fatal(srv.ListenAndServe())
+	// log.Fatal(srv.ListenAndServe())
+
+	scripts.CleanData("/Users/dhairya/Desktop/ol_dump_works_2021-05-13.txt")
 }

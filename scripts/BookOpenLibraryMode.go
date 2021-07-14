@@ -1,13 +1,24 @@
 package scripts
 
 type BookOpenLib struct {
-	NumberOfPages int      `json:"number_of_pages"`
-	Isbn10        []string `json:"isbn_10"`
-	Series        []string `json:"series"`
-	Key           string   `json:"key"`
-	Authors       []struct {
-		Key string `json:"key"`
+	Title    string   `json:"title"`
+	Subjects []string `json:"subjects"`
+	Key      string   `json:"key"`
+	Authors  []struct {
+		Type   string `json:"type"`
+		Author struct {
+			Key string `json:"key"`
+		} `json:"author"`
 	} `json:"authors"`
-	Genres []string `json:"genres"`
-	Title  string   `json:"title"`
+}
+
+type Book struct {
+	Title    string   `json:"title"`
+	Subjects []string `json:"subjects"`
+	Authors  []string `json:"author"`
+	Key      string   `json:"key"`
+}
+
+type Author struct {
+	Name string `json:"name"`
 }
