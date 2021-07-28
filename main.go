@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"shed/bookservice/handlers"
 	auth "shed/bookservice/handlers/Auth"
+	"shed/bookservice/tasks"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -51,7 +52,7 @@ func handleRequests() *mux.Router {
 
 func main() {
 
-	// go tasks.ScheduleNotificationTasks()
+	go tasks.ScheduleNotificationTasks()
 	router := handleRequests()
 
 	fmt.Println("Starting server")

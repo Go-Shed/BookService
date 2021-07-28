@@ -12,7 +12,7 @@ func ScheduleNotificationTasks() {
 	fmt.Println("Scheduing tasks for noitfication")
 
 	repo := notification.NewNotificationRepo()
-	gocron.Every(2).Minute().Do(func() {
+	gocron.Every(30).Second().Do(func() {
 		repo.SendNotificationsToAll()
 	})
 	<-gocron.Start()

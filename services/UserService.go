@@ -5,21 +5,27 @@ import (
 	"regexp"
 	"shed/bookservice/api"
 	"shed/bookservice/repos/dgraph/query"
+	"shed/bookservice/repos/notification"
 	"strings"
 )
 
 type UserService struct {
-	UserRepo query.UserRepo
+	UserRepo         query.UserRepo
+	NotificationRepo notification.NotificationRepo
 }
 
 func NewUserService() UserService {
-	return UserService{UserRepo: query.NewUserRepo()}
+	return UserService{UserRepo: query.NewUserRepo(), NotificationRepo: notification.NewNotificationRepo()}
 }
 
 func (u *UserService) FollowUser(userId, userIdToFollow string) error {
-	err := u.UserRepo.FollowUser(userId, userIdToFollow)
-	// p.NotificationRepo.AddNotificationTODB(userIdToFollow, constants.NOTIFICATION_TYPE_FOLLOW, userId, "", fcmToken, time.Now())
-	return err
+	notification, err := u.UserRepo.FollowUser(userId, userIdToFollow)
+	if err != nil {
+		return err
+	}
+
+	u.NotificationRepo.AddNotificationTODB(notification)
+	return nil
 }
 
 //// bool to send that message from error can be used as front end messages

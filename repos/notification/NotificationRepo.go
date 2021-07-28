@@ -115,15 +115,21 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 		return err
 	}
 
-	likes, comments, commentLikes, follow := getNotificationBatches(results)
+	likes, comments, _, follow := getNotificationBatches(results)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	go func(wg *sync.WaitGroup) {
-		for _, like := range likes {
-			text := fmt.Sprintf("%s and %d others liked your post", like.LastActionBy, like.Times)
-			err := repo.sendNotification(text, like.FCMToken)
+		for _, item := range likes {
+
+			var text string
+			if item.Times > 1 {
+				text = fmt.Sprintf("%s and %d others liked on your post", item.LastActionBy, item.Times)
+			} else {
+				text = fmt.Sprintf("%s liked your post", item.LastActionBy)
+			}
+			err := repo.sendNotification(text, item.FCMToken)
 
 			if err != nil {
 				log.Print(err)
@@ -131,22 +137,27 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 			}
 		}
 
-		for _, like := range commentLikes {
-			text := fmt.Sprintf("%s and %d others liked your comment", like.LastActionBy, like.Times)
-			err := repo.sendNotification(text, like.FCMToken)
+		// for _, like := range commentLikes { ///// TODO
+		// 	text := fmt.Sprintf("%s and %d others liked your comment", like.LastActionBy, like.Times)
+		// 	err := repo.sendNotification(text, like.FCMToken)
 
-			if err != nil {
-				log.Print(err)
-				break
-			}
-		}
+		// 	if err != nil {
+		// 		log.Print(err)
+		// 		break
+		// 	}
+		// }
 
 		wg.Done()
 	}(&wg)
 
 	go func(wg *sync.WaitGroup) {
 		for _, comment := range comments {
-			text := fmt.Sprintf("%s and %d others commented on your post", comment.LastActionBy, comment.Times)
+			var text string
+			if comment.Times > 1 {
+				text = fmt.Sprintf("%s and %d others commented on your post", comment.LastActionBy, comment.Times)
+			} else {
+				text = fmt.Sprintf("%s commented on your post", comment.LastActionBy)
+			}
 			err := repo.sendNotification(text, comment.FCMToken)
 
 			if err != nil {
@@ -155,9 +166,15 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 			}
 		}
 
-		for _, comment := range follow {
-			text := fmt.Sprintf("%s and %d others followed", comment.LastActionBy, comment.Times)
-			err := repo.sendNotification(text, comment.FCMToken)
+		for _, item := range follow {
+			var text string
+			if item.Times > 1 {
+				text = fmt.Sprintf("%s and %d others commented on your post", item.LastActionBy, item.Times)
+			} else {
+				text = fmt.Sprintf("%s commented on your post", item.LastActionBy)
+			}
+
+			err := repo.sendNotification(text, item.FCMToken)
 
 			if err != nil {
 				log.Print(err)
@@ -225,6 +242,7 @@ func (repo *NotificationRepo) sendNotification(text, token string) error {
 		Token: token,
 	}
 
+	fmt.Printf("%+v", message)
 	response, err := client.Send(ctx, message)
 	if err != nil {
 		log.Print(err)

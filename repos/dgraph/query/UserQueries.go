@@ -2,8 +2,10 @@ package query
 
 import (
 	"fmt"
+	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph"
 	"shed/bookservice/repos/dgraph/model"
+	"shed/bookservice/repos/notification"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -73,7 +75,7 @@ func (repo UserRepo) FetchProfile(profileUserId, userId string) (model.User, err
 	return user, nil
 }
 
-func (repo UserRepo) FollowUser(user, userToFollow string) error {
+func (repo UserRepo) FollowUser(user, userToFollow string) (notification.Notification, error) {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -81,16 +83,34 @@ func (repo UserRepo) FollowUser(user, userToFollow string) error {
 			updateUser(input: {filter: {userId: {eq: "%s"}}, set: {following: {userId: "%s"}}}){
 			  user{
 				userId
+				userName
+				following(filter: {userId: {eq: "%s"}}){
+					userName
+					fcmToken
+				  }
 			  }
 			}
 		  }
-		  `, user, userToFollow), Operation: "updateUser"}
+		  `, user, userToFollow, userToFollow), Operation: "updateUser"}
 
-	_, err := client.Do(query)
+	response, err := client.Do(query)
 	if err != nil {
-		return err
+		return notification.Notification{}, err
 	}
-	return nil
+
+	data := response["updateUser"].(map[string]interface{})
+	var updatedUsers []model.User
+	mapstructure.Decode(data["user"], &updatedUsers)
+
+	updatedUser := updatedUsers[0]
+
+	return notification.Notification{
+		FCMToken:         updatedUser.Following[0].FCMToken,
+		UserToSend:       notification.MongoUser{UserName: updatedUser.Following[0].Username, UserId: userToFollow},
+		UserBy:           notification.MongoUser{UserName: updatedUser.Username, UserId: user},
+		SourceId:         "FOLLOW", ///// keeping it to follow, unqiue index on mongo, wont be duplicated that way
+		NotificationType: constants.NOTIFICATION_TYPE_FOLLOW,
+	}, nil
 }
 
 func (repo UserRepo) UnFollowUser(user, userToUnFollow string) error {
