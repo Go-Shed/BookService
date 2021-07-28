@@ -6,16 +6,19 @@ import (
 	"shed/bookservice/common"
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
+	"shed/bookservice/repos/notification"
 	"strings"
 	"time"
 )
 
 type CommentService struct {
-	CommentRepo query.CommentRepo
+	CommentRepo      query.CommentRepo
+	UserRepo         query.UserRepo
+	NotificationRepo notification.NotificationRepo
 }
 
 func NewCommentService() CommentService {
-	return CommentService{CommentRepo: query.NewCommentRepo()}
+	return CommentService{CommentRepo: query.NewCommentRepo(), UserRepo: query.NewUserRepo(), NotificationRepo: notification.NewNotificationRepo()}
 }
 
 func (p *CommentService) AddComment(text, userId, postId string) error {
@@ -35,8 +38,16 @@ func (p *CommentService) AddComment(text, userId, postId string) error {
 		UpdatedAt: timeNow,
 	}
 
-	err := p.CommentRepo.AddComment(comment)
-	return err
+	notification, err := p.CommentRepo.AddComment(comment)
+
+	if err != nil {
+		return err
+	}
+
+	if notification.UserToSend != notification.UserBy {
+		p.NotificationRepo.AddNotificationTODB(notification)
+	}
+	return nil
 }
 
 func (p *CommentService) GetComments(postId, userId string) (api.GetCommentsResponse, error) {

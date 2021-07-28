@@ -18,6 +18,7 @@ func NewUserService() UserService {
 
 func (u *UserService) FollowUser(userId, userIdToFollow string) error {
 	err := u.UserRepo.FollowUser(userId, userIdToFollow)
+	// p.NotificationRepo.AddNotificationTODB(userIdToFollow, constants.NOTIFICATION_TYPE_FOLLOW, userId, "", fcmToken, time.Now())
 	return err
 }
 

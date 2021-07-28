@@ -2,8 +2,10 @@ package query
 
 import (
 	"fmt"
+	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph"
 	"shed/bookservice/repos/dgraph/model"
+	"shed/bookservice/repos/notification"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -166,6 +168,43 @@ func (repo PostRepo) GetExporeScreen(userId string) ([]model.Post, error) {
 	return posts, nil
 }
 
+func (repo PostRepo) GetPostDetail(postId string) (model.Post, error) {
+	client := repo.client
+
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`{
+			getPost(id: "%s") {
+			  id
+			  createdAt
+			  author {
+				userId
+				userPhoto
+				userName
+			  }
+			  text
+			  likesAggregate {
+				count
+			  }
+			  book {
+				name
+				id
+			  }
+			}
+		  }
+		  `, postId),
+	}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	var post model.Post
+	mapstructure.Decode(response["getPost"], &post)
+	return post, nil
+}
+
 func (repo PostRepo) CreatePost(user model.User) error {
 
 	type Userid struct {
@@ -245,7 +284,7 @@ func (repo PostRepo) UpdatePost(post model.Post) (model.Post, error) {
 	return updatedPost[0], nil
 }
 
-func (repo PostRepo) LikePost(postId, userId string) error {
+func (repo PostRepo) LikePost(postId, userId string) (notification.Notification, error) {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -253,18 +292,37 @@ func (repo PostRepo) LikePost(postId, userId string) error {
 			updatePost(input: {filter: {id: "%s"}, set: {likes: {userId: "%s"}}}){
 			  post{
 				id
+				author {
+					userId
+					userName
+					fcmToken
+				}
+				likes(filter: {userId: {eq: "%s"}}) {
+					userName
+				  }
 			  }
 			}
 		  }
-		  `, postId, userId), Operation: "updatePost"}
+		  `, postId, userId, userId), Operation: "updatePost"}
 
-	_, err := client.Do(query)
+	response, err := client.Do(query)
 
 	if err != nil {
-		return err
+		return notification.Notification{}, err
 	}
 
-	return nil
+	data := response["updatePost"].(map[string]interface{})
+	var updatedPosts []model.Post
+	mapstructure.Decode(data["post"], &updatedPosts)
+	updatedPost := updatedPosts[0]
+
+	return notification.Notification{
+		FCMToken:         updatedPost.Author.FCMToken,
+		UserToSend:       notification.MongoUser{UserName: updatedPost.Author.Username, UserId: updatedPost.Author.UserId},
+		UserBy:           notification.MongoUser{UserName: updatedPost.Likes[0].UserId, UserId: userId},
+		SourceId:         postId,
+		NotificationType: constants.NOTIFICATION_TYPE_LIKE,
+	}, nil
 }
 
 func (repo PostRepo) UnlikePost(postId, userId string) error {

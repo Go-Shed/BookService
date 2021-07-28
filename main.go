@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"shed/bookservice/handlers"
 	auth "shed/bookservice/handlers/Auth"
-	"shed/bookservice/repos/notification"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -22,6 +24,7 @@ func handleRequests() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Handle("/signup", auth.AuthorizeUsers(http.HandlerFunc(auth.Signup))).Methods("POST")
 	router.Handle("/getPosts", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.GetPosts))).Methods("POST")
+	router.Handle("/getPostDetail", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.GetPostDetail))).Methods("POST")
 	router.Handle("/addPost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.AddPost))).Methods("POST")
 	router.Handle("/updatePost", auth.AuthorizeUsers(http.HandlerFunc(postsHandler.UpdatePost))).Methods("POST")
 	router.Handle("/updateUser", auth.AuthorizeUsers(http.HandlerFunc(userHandler.UpdateUserName))).Methods("POST")
@@ -48,18 +51,16 @@ func handleRequests() *mux.Router {
 
 func main() {
 
-	// router := handleRequests()
+	// go tasks.ScheduleNotificationTasks()
+	router := handleRequests()
 
-	// fmt.Println("Starting server")
-	// srv := &http.Server{
-	// 	Handler:      router,
-	// 	Addr:         ":8080",
-	// 	WriteTimeout: 5 * time.Second,
-	// 	ReadTimeout:  5 * time.Second,
-	// }
+	fmt.Println("Starting server")
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         ":8080",
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
 
-	// log.Fatal(srv.ListenAndServe())
-
-	repo := notification.NewNotificationRepo()
-	repo.SendNotificationsToAll()
+	log.Fatal(srv.ListenAndServe())
 }

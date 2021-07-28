@@ -9,18 +9,20 @@ import (
 	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph/model"
 	"shed/bookservice/repos/dgraph/query"
+	"shed/bookservice/repos/notification"
 	"strings"
 	"time"
 )
 
 type PostsService struct {
-	PostRepo    query.PostRepo
-	BookRepo    query.BookRepo
-	CommentRepo query.CommentRepo
+	PostRepo         query.PostRepo
+	BookRepo         query.BookRepo
+	CommentRepo      query.CommentRepo
+	NotificationRepo notification.NotificationRepo
 }
 
 func NewPostsService() PostsService {
-	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo(), CommentRepo: query.NewCommentRepo()}
+	return PostsService{PostRepo: query.NewPostRepo(), BookRepo: query.NewBookRepo(), CommentRepo: query.NewCommentRepo(), NotificationRepo: notification.NewNotificationRepo()}
 }
 
 func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf bool) (api.GetPostsResponse, error) {
@@ -31,6 +33,36 @@ func (p *PostsService) GetPosts(userId, screenName, forUserId string, isSelf boo
 	} else {
 		return p.getExploreScreen(userId)
 	}
+}
+
+func (p *PostsService) GetPostDetail(userId, postId string) (api.GetPostResponse, error) {
+	if (len(userId) == 0) || len(postId) == 0 {
+		return api.GetPostResponse{}, fmt.Errorf("UserId mising")
+	}
+
+	post, err := p.PostRepo.GetPostDetail(postId)
+
+	if err != nil {
+		return api.GetPostResponse{}, err
+	}
+
+	response := api.GetPostResponse{
+		UserId:          post.Author.UserId,
+		UserName:        post.Author.Username,
+		ShowEditBtn:     false,
+		ShowFollowBtn:   false,
+		ShowLikeSection: true,
+		IsFollowed:      false,
+		IsLiked:         false,
+		UserPhoto:       post.Author.UserPhoto,
+		Text:            strings.Replace(post.Text, "\\n", "\n", -1),
+		PostId:          post.Id,
+		LikeCount:       fmt.Sprint(post.LikesAggregate.Count),
+		CreatedAt:       common.GetFormattedDate(post.CreatedAt),
+		Book:            api.BookResponse{BookId: post.Book.Id, BookName: toUpperCase(post.Book.Name)},
+	}
+
+	return response, nil
 }
 
 func (p *PostsService) AddPost(text, userId, bookId, bookTitle string) error {
@@ -87,11 +119,12 @@ func (p *PostsService) UpdatePost(postId, text, bookTitle, bookId, userId string
 func (p *PostsService) LikePost(postId, userId string) error {
 	client := p.PostRepo
 
-	err := client.LikePost(postId, userId)
+	notification, err := client.LikePost(postId, userId)
 
 	if err != nil {
 		return err
 	}
+	p.NotificationRepo.AddNotificationTODB(notification)
 	return nil
 }
 

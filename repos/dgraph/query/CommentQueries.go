@@ -2,8 +2,10 @@ package query
 
 import (
 	"fmt"
+	"shed/bookservice/common/constants"
 	"shed/bookservice/repos/dgraph"
 	"shed/bookservice/repos/dgraph/model"
+	"shed/bookservice/repos/notification"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -16,7 +18,8 @@ func NewCommentRepo() CommentRepo {
 	return CommentRepo{client: dgraph.Dgraph{}}
 }
 
-func (repo CommentRepo) AddComment(comment model.Comment) error {
+// Also return the notification object to be sent
+func (repo CommentRepo) AddComment(comment model.Comment) (notification.Notification, error) {
 
 	client := repo.client
 	query := dgraph.Request{
@@ -24,6 +27,16 @@ func (repo CommentRepo) AddComment(comment model.Comment) error {
 			addComment(input: $patch) {
 			  comment {
 				id
+				post{
+					author{
+						fcmToken
+						userId
+						userName
+					}
+				}
+				user {
+					userName
+				}
 			  }
 			}
 		  }`,
@@ -32,7 +45,7 @@ func (repo CommentRepo) AddComment(comment model.Comment) error {
 	response, err := client.Do(query)
 
 	if err != nil {
-		return err
+		return notification.Notification{}, err
 	}
 
 	var comments []model.Comment
@@ -40,10 +53,16 @@ func (repo CommentRepo) AddComment(comment model.Comment) error {
 	mapstructure.Decode(data["comment"], &comments)
 
 	if len(comments) == 0 {
-		return fmt.Errorf("comment not added")
+		return notification.Notification{}, fmt.Errorf("comment not added")
 	}
 
-	return nil
+	return notification.Notification{
+		FCMToken:         comments[0].Post.Author.FCMToken,
+		UserToSend:       notification.MongoUser{UserName: comments[0].Post.Author.Username, UserId: comments[0].Post.Author.UserId},
+		UserBy:           notification.MongoUser{UserName: comments[0].User.Username, UserId: comment.User.UserId},
+		SourceId:         comment.Post.Id,
+		NotificationType: constants.NOTIFICATION_TYPE_COMMENT,
+	}, nil
 }
 
 func (repo CommentRepo) GetComments(postId string) ([]model.Comment, error) {

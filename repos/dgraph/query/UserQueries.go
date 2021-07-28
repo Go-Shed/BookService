@@ -264,3 +264,31 @@ func (repo UserRepo) UpdateFCMToken(user, fcmToken string) error {
 	}
 	return nil
 }
+func (repo UserRepo) GetFCMTokenAndUserWhoLikedIt(postId, userId string) (model.Post, error) {
+
+	client := repo.client
+	query := dgraph.Request{
+		Query: fmt.Sprintf(`query MyQuery {
+			getPost(postId: "%s") {
+				author{
+					fcmToken
+					userId
+				}
+				likes(filter: {userId: {eq: "%s"}}){
+					userName
+				  }
+			  }
+			}
+		  }
+		  `, postId, userId)}
+
+	response, err := client.Do(query)
+
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	var post model.Post
+	mapstructure.Decode(response["getUser"], &post)
+	return post, nil
+}

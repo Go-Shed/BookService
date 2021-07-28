@@ -47,6 +47,27 @@ func (p *postHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func (p *postHandler) GetPostDetail(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var request api.PostIdRequest
+	json.Unmarshal(reqBody, &request)
+
+	response, err := p.PostsService.GetPostDetail(uid, request.PostId)
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(api.ApiResponse{HTTPCode: 500, Message: "Looks like there is some issue here, please try again after some time"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
 func (p *postHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	uid := ctx.Value(auth.RequestContextKey{Key: "uid"}).(string)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"shed/bookservice/common/constants"
 	"sync"
 	"time"
 
@@ -13,19 +14,28 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/api/option"
 )
 
-type notificationRepo struct {
+type NotificationRepo struct {
 	mongoClient *mongo.Client
 }
 
+//// mongo object in db
+//// this is how notification is stored on mongodb
 type Notification struct {
 	Id               primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	UserToSend       string             `json:"userToSend"`
+	UserToSend       MongoUser          `json:"userToSend"`
 	NotificationType string             `json:"notificationType"`
-	UserBy           string             `json:"userBy"`
-	PostId           string             `json:"postId"`
+	UserBy           MongoUser          `json:"userBy"`
+	SourceId         string             `json:"sourceId"`
 	FCMToken         string             `json:"fcmToken"`
+	CommentId        string             `json:"commentId"`
+}
+
+type MongoUser struct {
+	UserName string `json:"userName"`
+	UserId   string `json:"userId"`
 }
 
 type NotificationToSend struct {
@@ -34,7 +44,7 @@ type NotificationToSend struct {
 	Times        int
 }
 
-func NewNotificationRepo() notificationRepo {
+func NewNotificationRepo() NotificationRepo {
 	uri := "mongodb+srv://troll:bq$2FxWkqNT!NVD@cluster0.dygiz.mongodb.net/shed?retryWrites=true&w=majority"
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
@@ -46,14 +56,14 @@ func NewNotificationRepo() notificationRepo {
 		log.Fatal(err)
 	}
 
-	return notificationRepo{
+	return NotificationRepo{
 		mongoClient: mongoClient,
 	}
 }
 
-func (repo *notificationRepo) AddNotificationTODB(userToSend, notificationType, userBy, postId, fcmToken string, createdAt time.Time) error {
+func (repo *NotificationRepo) AddNotificationTODB(notification Notification) error {
 
-	if len(fcmToken) == 0 {
+	if len(notification.FCMToken) == 0 {
 		return nil
 	}
 
@@ -62,15 +72,21 @@ func (repo *notificationRepo) AddNotificationTODB(userToSend, notificationType, 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	collection := client.Database("shed").Collection("notification")
 
-	_, err := collection.InsertOne(ctx, bson.D{
-		{Key: "userToSend", Value: userToSend},
-		{Key: "notificationType", Value: notificationType},
-		{Key: "userBy", Value: userBy},
-		{Key: "createdAt", Value: createdAt},
+	document := bson.D{
+		{Key: "userToSend", Value: notification.UserToSend},
+		{Key: "notificationType", Value: notification.NotificationType},
+		{Key: "userBy", Value: notification.UserBy},
+		{Key: "createdAt", Value: time.Now()},
 		{Key: "isSent", Value: false},
-		{Key: "postId", Value: postId},
-		{Key: "fcmToken", Value: fcmToken},
-	})
+		{Key: "fcmToken", Value: notification.FCMToken},
+	}
+	if notification.NotificationType == constants.NOTIFICATION_TYPE_COMMENT { ////// To support unqiue indexing over sourceId
+		document = append(document, bson.E{Key: "commentId", Value: notification.SourceId})
+	} else {
+		document = append(document, bson.E{Key: "sourceId", Value: notification.SourceId})
+	}
+
+	_, err := collection.InsertOne(ctx, document)
 
 	if err != nil {
 		log.Print(err)
@@ -80,7 +96,7 @@ func (repo *notificationRepo) AddNotificationTODB(userToSend, notificationType, 
 	return nil
 }
 
-func (repo *notificationRepo) SendNotificationsToAll() error {
+func (repo *NotificationRepo) SendNotificationsToAll() error {
 	client := repo.mongoClient
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -99,7 +115,7 @@ func (repo *notificationRepo) SendNotificationsToAll() error {
 		return err
 	}
 
-	likes, comments := getNotificationBatches(results)
+	likes, comments, commentLikes, follow := getNotificationBatches(results)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -114,12 +130,33 @@ func (repo *notificationRepo) SendNotificationsToAll() error {
 				break
 			}
 		}
+
+		for _, like := range commentLikes {
+			text := fmt.Sprintf("%s and %d others liked your comment", like.LastActionBy, like.Times)
+			err := repo.sendNotification(text, like.FCMToken)
+
+			if err != nil {
+				log.Print(err)
+				break
+			}
+		}
+
 		wg.Done()
 	}(&wg)
 
 	go func(wg *sync.WaitGroup) {
 		for _, comment := range comments {
 			text := fmt.Sprintf("%s and %d others commented on your post", comment.LastActionBy, comment.Times)
+			err := repo.sendNotification(text, comment.FCMToken)
+
+			if err != nil {
+				log.Print(err)
+				break
+			}
+		}
+
+		for _, comment := range follow {
+			text := fmt.Sprintf("%s and %d others followed", comment.LastActionBy, comment.Times)
 			err := repo.sendNotification(text, comment.FCMToken)
 
 			if err != nil {
@@ -135,7 +172,7 @@ func (repo *notificationRepo) SendNotificationsToAll() error {
 	return nil
 }
 
-func (repo *notificationRepo) updateNotification(result []Notification) error {
+func (repo *NotificationRepo) updateNotification(result []Notification) error {
 
 	client := repo.mongoClient
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -163,9 +200,16 @@ func (repo *notificationRepo) updateNotification(result []Notification) error {
 	return nil
 }
 
-func (repo *notificationRepo) sendNotification(text, token string) error {
+func (repo *NotificationRepo) sendNotification(text, token string) error {
 
-	app := &firebase.App{}
+	opt := option.WithCredentialsFile("/Users/dhairya/Desktop/shed-477d9-firebase-adminsdk-454it-d4615cac66.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+
+	if err != nil {
+		log.Print("Error getting firebase app")
+		return err
+	}
+
 	ctx := context.Background()
 	client, err := app.Messaging(ctx)
 	if err != nil {
@@ -191,55 +235,94 @@ func (repo *notificationRepo) sendNotification(text, token string) error {
 	return nil
 }
 
+/// TODO ---- Make this part a little better (DRY)
 //// get all notifification to send to user
 /// one batch for comment
 /// and batch map for likes
-func getNotificationBatches(results []Notification) (map[string]NotificationToSend, map[string]NotificationToSend) {
+func getNotificationBatches(results []Notification) (map[string]NotificationToSend, map[string]NotificationToSend, map[string]NotificationToSend, map[string]NotificationToSend) {
 
 	commentNotifications := make(map[string]NotificationToSend)
 	likeNotification := make(map[string]NotificationToSend)
+	commentLikeNotification := make(map[string]NotificationToSend)
+	followNotification := make(map[string]NotificationToSend)
 
 	for _, notification := range results {
 
-		if notification.NotificationType == "comment" {
+		if notification.NotificationType == constants.NOTIFICATION_TYPE_COMMENT {
 
-			if val, ok := commentNotifications[notification.UserToSend]; ok {
+			if val, ok := commentNotifications[notification.UserToSend.UserName]; ok {
 				item := NotificationToSend{
 					FCMToken:     notification.FCMToken,
-					LastActionBy: notification.UserBy,
+					LastActionBy: notification.UserBy.UserName,
 					Times:        val.Times + 1,
 				}
-				commentNotifications[notification.UserToSend] = item
+				commentNotifications[notification.UserToSend.UserName] = item
 				continue
 			}
 
 			item := NotificationToSend{
 				FCMToken:     notification.FCMToken,
-				LastActionBy: notification.UserBy,
+				LastActionBy: notification.UserBy.UserName,
 				Times:        1,
 			}
-			commentNotifications[notification.UserToSend] = item
-		} else if notification.NotificationType == "like" {
+			commentNotifications[notification.UserToSend.UserName] = item
+		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_LIKE {
 
-			if val, ok := likeNotification[notification.UserToSend]; ok {
+			if val, ok := likeNotification[notification.UserToSend.UserName]; ok {
 				item := NotificationToSend{
 					FCMToken:     notification.FCMToken,
-					LastActionBy: notification.UserBy,
+					LastActionBy: notification.UserBy.UserName,
 					Times:        val.Times + 1,
 				}
-				likeNotification[notification.UserToSend] = item
+				likeNotification[notification.UserToSend.UserName] = item
 				continue
 			}
 
 			item := NotificationToSend{
 				FCMToken:     notification.FCMToken,
-				LastActionBy: notification.UserBy,
+				LastActionBy: notification.UserBy.UserName,
 				Times:        1,
 			}
-			likeNotification[notification.UserToSend] = item
+			likeNotification[notification.UserToSend.UserName] = item
+		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_COMMENT_LIKE {
+
+			if val, ok := commentLikeNotification[notification.UserToSend.UserName]; ok {
+				item := NotificationToSend{
+					FCMToken:     notification.FCMToken,
+					LastActionBy: notification.UserBy.UserName,
+					Times:        val.Times + 1,
+				}
+				commentLikeNotification[notification.UserToSend.UserName] = item
+				continue
+			}
+
+			item := NotificationToSend{
+				FCMToken:     notification.FCMToken,
+				LastActionBy: notification.UserBy.UserName,
+				Times:        1,
+			}
+			commentLikeNotification[notification.UserToSend.UserName] = item
+		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_FOLLOW {
+
+			if val, ok := followNotification[notification.UserToSend.UserName]; ok {
+				item := NotificationToSend{
+					FCMToken:     notification.FCMToken,
+					LastActionBy: notification.UserBy.UserName,
+					Times:        val.Times + 1,
+				}
+				followNotification[notification.UserToSend.UserName] = item
+				continue
+			}
+
+			item := NotificationToSend{
+				FCMToken:     notification.FCMToken,
+				LastActionBy: notification.UserBy.UserName,
+				Times:        1,
+			}
+			followNotification[notification.UserToSend.UserName] = item
 		}
 
 	}
 
-	return likeNotification, commentNotifications
+	return likeNotification, commentNotifications, commentLikeNotification, followNotification
 }
