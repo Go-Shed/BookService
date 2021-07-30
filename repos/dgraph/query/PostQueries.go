@@ -319,7 +319,7 @@ func (repo PostRepo) LikePost(postId, userId string) (notification.Notification,
 	return notification.Notification{
 		FCMToken:         updatedPost.Author.FCMToken,
 		UserToSend:       notification.MongoUser{UserName: updatedPost.Author.Username, UserId: updatedPost.Author.UserId},
-		UserBy:           notification.MongoUser{UserName: updatedPost.Likes[0].UserId, UserId: userId},
+		UserBy:           notification.MongoUser{UserName: updatedPost.Likes[0].Username, UserId: userId},
 		SourceId:         postId,
 		NotificationType: constants.NOTIFICATION_TYPE_LIKE,
 	}, nil

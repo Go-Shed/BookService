@@ -8,13 +8,11 @@ import (
 	"sync"
 	"time"
 
-	firebase "firebase.google.com/go"
-	messaging "firebase.google.com/go/messaging"
+	"github.com/NaySoftware/go-fcm"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"google.golang.org/api/option"
 )
 
 type NotificationRepo struct {
@@ -115,6 +113,10 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 		return err
 	}
 
+	if len(results) == 0 {
+		return nil
+	}
+
 	likes, comments, _, follow := getNotificationBatches(results)
 
 	var wg sync.WaitGroup
@@ -125,7 +127,7 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 
 			var text string
 			if item.Times > 1 {
-				text = fmt.Sprintf("%s and %d others liked on your post", item.LastActionBy, item.Times)
+				text = fmt.Sprintf("%s and %d others liked on your post", item.LastActionBy, item.Times-1)
 			} else {
 				text = fmt.Sprintf("%s liked your post", item.LastActionBy)
 			}
@@ -154,7 +156,7 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 		for _, comment := range comments {
 			var text string
 			if comment.Times > 1 {
-				text = fmt.Sprintf("%s and %d others commented on your post", comment.LastActionBy, comment.Times)
+				text = fmt.Sprintf("%s and %d others commented on your post", comment.LastActionBy, comment.Times-1)
 			} else {
 				text = fmt.Sprintf("%s commented on your post", comment.LastActionBy)
 			}
@@ -169,9 +171,9 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 		for _, item := range follow {
 			var text string
 			if item.Times > 1 {
-				text = fmt.Sprintf("%s and %d others commented on your post", item.LastActionBy, item.Times)
+				text = fmt.Sprintf("%s and %d others started followed you", item.LastActionBy, item.Times-1)
 			} else {
-				text = fmt.Sprintf("%s commented on your post", item.LastActionBy)
+				text = fmt.Sprintf("%s started following you", item.LastActionBy)
 			}
 
 			err := repo.sendNotification(text, item.FCMToken)
@@ -219,37 +221,31 @@ func (repo *NotificationRepo) updateNotification(result []Notification) error {
 
 func (repo *NotificationRepo) sendNotification(text, token string) error {
 
-	opt := option.WithCredentialsFile("/Users/dhairya/Desktop/shed-477d9-firebase-adminsdk-454it-d4615cac66.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
+	const serverKey = "AAAAckyK83s:APA91bGzbVzVPm0SA9VZ7nitDeS1uFqoiIrkkyDonMWPZd4vMP5-IPt-hs0g6MzLw13-EBP53vpCKQQhsa2E_30Vlx59N3gEwI6sLf-U-LDPqgE0nQOfFnFqoMXCD6yJCRtpDCXYKBxx"
 
-	if err != nil {
-		log.Print("Error getting firebase app")
-		return err
+	var NP fcm.NotificationPayload
+	NP.Title = "SHED"
+	NP.Body = text
+	NP.ClickAction = "OPEN_ACTIVITY_1"
+
+	data := map[string]string{
+		"deepLink": "shed://postDetailScreen/",
 	}
 
-	ctx := context.Background()
-	client, err := app.Messaging(ctx)
-	if err != nil {
-		log.Print("error getting Messaging client:", err)
-		return err
+	ids := []string{
+		token,
 	}
 
-	message := &messaging.Message{
-		Notification: &messaging.Notification{
-			Title: "Shed",
-			Body:  text,
-		},
-		Token: token,
+	c := fcm.NewFcmClient(serverKey)
+	c.NewFcmRegIdsMsg(ids, data)
+	c.SetNotificationPayload(&NP)
+	status, err := c.Send()
+	if err == nil {
+		status.PrintResults()
+	} else {
+		fmt.Println(err)
 	}
 
-	fmt.Printf("%+v", message)
-	response, err := client.Send(ctx, message)
-	if err != nil {
-		log.Print(err)
-		return err
-	}
-
-	fmt.Println("Successfully sent message:", response)
 	return nil
 }
 

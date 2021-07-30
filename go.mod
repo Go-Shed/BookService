@@ -5,6 +5,7 @@ go 1.16
 require (
 	cloud.google.com/go/firestore v1.5.0 // indirect
 	firebase.google.com/go v3.13.0+incompatible // indirect
+	github.com/NaySoftware/go-fcm v0.0.0-20190516140123-808e978ddcd2 // indirect
 	github.com/dgraph-io/dgo v1.0.0 // indirect
 	github.com/dgraph-io/dgo/v200 v200.0.0-20210401091508-95bfd74de60e // indirect
 	github.com/googleapis/gax-go v1.0.3 // indirect
