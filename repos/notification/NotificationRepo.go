@@ -40,6 +40,7 @@ type NotificationToSend struct {
 	FCMToken     string
 	LastActionBy string //// name of person who liked/commented the photo last
 	Times        int
+	PostId       string
 }
 
 func NewNotificationRepo() NotificationRepo {
@@ -131,7 +132,7 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 			} else {
 				text = fmt.Sprintf("%s liked your post", item.LastActionBy)
 			}
-			err := repo.sendNotification(text, item.FCMToken)
+			err := repo.sendNotification(text, item.FCMToken, item.PostId)
 
 			if err != nil {
 				log.Print(err)
@@ -160,7 +161,7 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 			} else {
 				text = fmt.Sprintf("%s commented on your post", comment.LastActionBy)
 			}
-			err := repo.sendNotification(text, comment.FCMToken)
+			err := repo.sendNotification(text, comment.FCMToken, comment.PostId)
 
 			if err != nil {
 				log.Print(err)
@@ -176,7 +177,7 @@ func (repo *NotificationRepo) SendNotificationsToAll() error {
 				text = fmt.Sprintf("%s started following you", item.LastActionBy)
 			}
 
-			err := repo.sendNotification(text, item.FCMToken)
+			err := repo.sendNotification(text, item.FCMToken, item.PostId)
 
 			if err != nil {
 				log.Print(err)
@@ -219,9 +220,10 @@ func (repo *NotificationRepo) updateNotification(result []Notification) error {
 	return nil
 }
 
-func (repo *NotificationRepo) sendNotification(text, token string) error {
+func (repo *NotificationRepo) sendNotification(text, token, postId string) error {
 
 	const serverKey = "AAAAckyK83s:APA91bGzbVzVPm0SA9VZ7nitDeS1uFqoiIrkkyDonMWPZd4vMP5-IPt-hs0g6MzLw13-EBP53vpCKQQhsa2E_30Vlx59N3gEwI6sLf-U-LDPqgE0nQOfFnFqoMXCD6yJCRtpDCXYKBxx"
+	deepLink := fmt.Sprintf("shed://postDetailScreen/%s", postId)
 
 	var NP fcm.NotificationPayload
 	NP.Title = "SHED"
@@ -229,7 +231,7 @@ func (repo *NotificationRepo) sendNotification(text, token string) error {
 	NP.ClickAction = "OPEN_ACTIVITY_1"
 
 	data := map[string]string{
-		"deepLink": "shed://postDetailScreen/",
+		"deepLink": deepLink,
 	}
 
 	ids := []string{
@@ -269,6 +271,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 					FCMToken:     notification.FCMToken,
 					LastActionBy: notification.UserBy.UserName,
 					Times:        val.Times + 1,
+					PostId:       notification.SourceId,
 				}
 				commentNotifications[notification.UserToSend.UserName] = item
 				continue
@@ -278,6 +281,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 				FCMToken:     notification.FCMToken,
 				LastActionBy: notification.UserBy.UserName,
 				Times:        1,
+				PostId:       notification.SourceId,
 			}
 			commentNotifications[notification.UserToSend.UserName] = item
 		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_LIKE {
@@ -287,6 +291,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 					FCMToken:     notification.FCMToken,
 					LastActionBy: notification.UserBy.UserName,
 					Times:        val.Times + 1,
+					PostId:       notification.SourceId,
 				}
 				likeNotification[notification.UserToSend.UserName] = item
 				continue
@@ -296,6 +301,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 				FCMToken:     notification.FCMToken,
 				LastActionBy: notification.UserBy.UserName,
 				Times:        1,
+				PostId:       notification.SourceId,
 			}
 			likeNotification[notification.UserToSend.UserName] = item
 		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_COMMENT_LIKE {
