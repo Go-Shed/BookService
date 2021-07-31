@@ -223,15 +223,16 @@ func (repo *NotificationRepo) updateNotification(result []Notification) error {
 func (repo *NotificationRepo) sendNotification(text, token, postId string) error {
 
 	const serverKey = "AAAAckyK83s:APA91bGzbVzVPm0SA9VZ7nitDeS1uFqoiIrkkyDonMWPZd4vMP5-IPt-hs0g6MzLw13-EBP53vpCKQQhsa2E_30Vlx59N3gEwI6sLf-U-LDPqgE0nQOfFnFqoMXCD6yJCRtpDCXYKBxx"
-	deepLink := fmt.Sprintf("shed://postDetailScreen/%s", postId)
 
 	var NP fcm.NotificationPayload
 	NP.Title = "SHED"
 	NP.Body = text
 	NP.ClickAction = "OPEN_SHED_ACTIVITY"
 
-	data := map[string]string{
-		"deepLink": deepLink,
+	data := make(map[string]string)
+
+	if len(postId) != 0 {
+		data["deepLink"] = fmt.Sprintf("shed://postDetailScreen/%s", postId)
 	}
 
 	ids := []string{
@@ -241,6 +242,7 @@ func (repo *NotificationRepo) sendNotification(text, token, postId string) error
 	c := fcm.NewFcmClient(serverKey)
 	c.NewFcmRegIdsMsg(ids, data)
 	c.SetNotificationPayload(&NP)
+
 	status, err := c.Send()
 	if err == nil {
 		status.PrintResults()
