@@ -228,7 +228,7 @@ func (repo *NotificationRepo) sendNotification(text, token, postId string) error
 	var NP fcm.NotificationPayload
 	NP.Title = "SHED"
 	NP.Body = text
-	NP.ClickAction = "OPEN_ACTIVITY_1"
+	NP.ClickAction = "OPEN_SHED_ACTIVITY"
 
 	data := map[string]string{
 		"deepLink": deepLink,
