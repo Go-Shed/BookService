@@ -275,7 +275,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 					FCMToken:     notification.FCMToken,
 					LastActionBy: notification.UserBy.UserName,
 					Times:        val.Times + 1,
-					PostId:       notification.SourceId,
+					PostId:       notification.CommentId, //// this is post id not comment id
 				}
 				commentNotifications[notification.UserToSend.UserName] = item
 				continue
@@ -285,7 +285,7 @@ func getNotificationBatches(results []Notification) (map[string]NotificationToSe
 				FCMToken:     notification.FCMToken,
 				LastActionBy: notification.UserBy.UserName,
 				Times:        1,
-				PostId:       notification.SourceId,
+				PostId:       notification.CommentId,
 			}
 			commentNotifications[notification.UserToSend.UserName] = item
 		} else if notification.NotificationType == constants.NOTIFICATION_TYPE_LIKE {
