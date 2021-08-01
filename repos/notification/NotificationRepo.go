@@ -242,6 +242,7 @@ func (repo *NotificationRepo) sendNotification(text, token, postId string) error
 	c := fcm.NewFcmClient(serverKey)
 	c.NewFcmRegIdsMsg(ids, data)
 	c.SetNotificationPayload(&NP)
+	c.SetPriority(fcm.Priority_HIGH)
 
 	status, err := c.Send()
 	if err == nil {
