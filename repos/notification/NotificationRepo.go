@@ -228,6 +228,7 @@ func (repo *NotificationRepo) sendNotification(text, token, postId string) error
 	NP.Title = "SHED"
 	NP.Body = text
 	NP.ClickAction = "OPEN_SHED_ACTIVITY"
+	NP.AndroidChannelID = "SHED_CHANNEL"
 
 	data := make(map[string]string)
 
